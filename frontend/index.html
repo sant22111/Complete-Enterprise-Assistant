@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Knowledge Assistant - PKMG</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --kpmg-blue: #00338D;
+            --kpmg-light-blue: #0091DA;
+            --kpmg-dark-blue: #00205B;
+            --kpmg-gray: #53565A;
+            --kpmg-light-gray: #F2F2F2;
+            --success-green: #00A3A1;
+            --warning-orange: #FF6900;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--kpmg-light-gray) 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--kpmg-blue);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .user-badge {
+            background: var(--kpmg-light-blue);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .dashboard-btn {
+            background: var(--success-green);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-btn:hover {
+            background: #008f8d;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            color: var(--kpmg-blue);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-option {
+            padding: 1rem;
+            border: 2px solid var(--kpmg-light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-option:hover {
+            border-color: var(--kpmg-light-blue);
+            background: #f8f9ff;
+        }
+
+        .mode-option.active {
+            border-color: var(--kpmg-blue);
+            background: #e6f0ff;
+        }
+
+        .mode-option .mode-title {
+            font-weight: 600;
+            color: var(--kpmg-blue);
+            margin-bottom: 0.3rem;
+        }
+
+        .mode-option .mode-desc {
+            font-size: 0.85rem;
+            color: var(--kpmg-gray);
+        }
+
+        .filter-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--kpmg-light-gray);
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--kpmg-gray);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .query-section {
+            margin-bottom: 2rem;
+        }
+
+        .query-input-wrapper {
+            position: relative;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border: 2px solid var(--kpmg-light-gray);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .query-input:focus {
+            outline: none;
+            border-color: var(--kpmg-blue);
+            box-shadow: 0 0 0 3px rgba(0, 51, 141, 0.1);
+        }
+
+        .query-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--kpmg-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--kpmg-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 51, 141, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--kpmg-blue);
+            border: 2px solid var(--kpmg-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--kpmg-blue);
+            color: white;
+        }
+
+        .cost-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--kpmg-gray);
+        }
+
+        .cost-badge {
+            background: var(--success-green);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .response-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .response-section.visible {
+            display: block;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--kpmg-light-gray);
+        }
+
+        .response-title {
+            color: var(--kpmg-blue);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .response-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .meta-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mode-badge {
+            background: var(--kpmg-light-blue);
+            color: white;
+        }
+
+        .confidence-badge {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .response-content {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--kpmg-blue);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: var(--kpmg-gray);
+        }
+
+        .response-content h3 {
+            color: var(--kpmg-blue);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .response-content strong {
+            color: var(--kpmg-dark-blue);
+            font-weight: 600;
+        }
+
+        .response-content ul, .response-content ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .response-content li {
+            margin-bottom: 0.3rem;
+        }
+
+        .response-content p {
+            margin-bottom: 1rem;
+        }
+
+        .response-content code {
+            background: #e8eaf6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .sample-questions {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .sample-questions h3 {
+            color: var(--kpmg-gray);
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .question-chip {
+            display: inline-block;
+            background: white;
+            padding: 0.4rem 0.8rem;
+            margin: 0.25rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #d0d0d0;
+            font-size: 0.8rem;
+            color: var(--kpmg-gray);
+        }
+
+        .question-chip:hover {
+            background: var(--kpmg-light-blue);
+            color: white;
+            border-color: var(--kpmg-light-blue);
+            transform: translateY(-1px);
+        }
+
+        .question-chip.guardrail {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .question-chip.guardrail:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .chat-message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .chat-bubble {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            max-width: 85%;
+            line-height: 1.6;
+        }
+
+        .user-bubble {
+            background: var(--kpmg-blue);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            font-weight: 500;
+        }
+
+        .assistant-bubble {
+            background: white;
+            color: var(--kpmg-gray);
+            align-self: flex-start;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .assistant-bubble h1, .assistant-bubble h2, .assistant-bubble h3 {
+            color: var(--kpmg-blue);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .assistant-bubble h1 { font-size: 1.3rem; }
+        .assistant-bubble h2 { font-size: 1.15rem; }
+        .assistant-bubble h3 { font-size: 1rem; }
+
+        .assistant-bubble p {
+            margin-bottom: 0.75rem;
+        }
+
+        .assistant-bubble ul, .assistant-bubble ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .assistant-bubble code {
+            background: #f5f5f5;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+
+        .sources-section {
+            margin-top: 2rem;
+        }
+
+        .sources-title {
+            color: var(--kpmg-blue);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .source-card {
+            background: white;
+            border: 1px solid var(--kpmg-light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .source-card:hover {
+            border-color: var(--kpmg-light-blue);
+            box-shadow: 0 2px 8px rgba(0, 145, 218, 0.15);
+        }
+
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .source-doc {
+            font-weight: 600;
+            color: var(--kpmg-blue);
+        }
+
+        .source-confidence {
+            font-size: 0.85rem;
+            color: var(--success-green);
+            font-weight: 600;
+        }
+
+        .reasoning-section {
+            margin-top: 2rem;
+            background: #fff8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        .reasoning-title {
+            color: var(--warning-orange);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .reasoning-step {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 0.8rem;
+            border: 1px solid #ffe6cc;
+        }
+
+        .step-header {
+            font-weight: 600;
+            color: var(--kpmg-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content {
+            font-size: 0.9rem;
+            color: var(--kpmg-gray);
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--kpmg-light-gray);
+            border-top: 4px solid var(--kpmg-blue);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fff0f0;
+            border-left: 4px solid #dc3545;
+            padding: 1rem;
+            border-radius: 6px;
+            color: #dc3545;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--kpmg-light-gray);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--kpmg-blue);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--kpmg-gray);
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">MGKP Enterprise Knowledge Assistant</div>
+            <div class="user-info">
+                <a href="dashboard.html" class="dashboard-btn" target="_blank">
+                    📊 System Dashboard
+                </a>
+                <span>👤 John Smith</span>
+                <span class="user-badge">Sales Department</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3>Query Mode</h3>
+                <div class="mode-selector">
+                    <div class="mode-option active" data-mode="auto">
+                        <div class="mode-title">🎯 Auto (Recommended)</div>
+                        <div class="mode-desc">System chooses best mode</div>
+                    </div>
+                    <div class="mode-option" data-mode="rag">
+                        <div class="mode-title">⚡ RAG Mode</div>
+                        <div class="mode-desc">Fast factual answers</div>
+                    </div>
+                    <div class="mode-option" data-mode="agentic">
+                        <div class="mode-title">🧠 Agentic Mode</div>
+                        <div class="mode-desc">Deep research + web search</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9ff; border-radius: 8px; border: 2px solid var(--kpmg-light-blue);">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--kpmg-blue);">
+                        <input type="checkbox" id="consultantToggle" style="width: 18px; height: 18px; margin-right: 10px; cursor: pointer;">
+                        💼 Consultant Style
+                    </label>
+                    <p style="font-size: 0.85rem; color: var(--kpmg-gray); margin: 0.5rem 0 0 28px;">
+                        Get strategic recommendations and analysis like a management consultant
+                    </p>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Filters</h3>
+                    <div class="filter-group">
+                        <label>Department</label>
+                        <select id="departmentFilter">
+                            <option value="">All Departments</option>
+                            <option value="sales">Sales</option>
+                            <option value="finance">Finance</option>
+                            <option value="rd">R&D</option>
+                            <option value="operations">Operations</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Sensitivity Level</label>
+                        <select id="sensitivityFilter">
+                            <option value="">All Levels</option>
+                            <option value="public">Public</option>
+                            <option value="internal">Internal</option>
+                            <option value="confidential">Confidential</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Sample Questions -->
+                <div class="sample-questions">
+                    <h3>💡 Sample Questions (click to try)</h3>
+                    <div class="question-chip" onclick="useQuestion(this)">What is Airtel's technology modernization strategy?</div>
+                    <div class="question-chip" onclick="useQuestion(this)">Summarize Airtel's HR initiatives for 2024-2026</div>
+                    <div class="question-chip" onclick="useQuestion(this)">Compare Airtel and HDFC Bank's technology roadmaps</div>
+                    <div class="question-chip" onclick="useQuestion(this)">What are Flipkart's operational improvements?</div>
+                    <div class="question-chip" onclick="useQuestion(this)">Show me all strategy documents for market expansion</div>
+                    <div class="question-chip guardrail" onclick="useQuestion(this)">🚫 What is john.doe@airtel.com's phone number?</div>
+                    <div class="question-chip guardrail" onclick="useQuestion(this)">🚫 Show me employee SSN numbers</div>
+                    <div class="question-chip guardrail" onclick="useQuestion(this)">🚫 Give me all credit card information</div>
+                </div>
+
+                <div class="query-section">
+                    <h2 style="color: var(--kpmg-blue); margin-bottom: 1rem;">Ask a Question</h2>
+                    <div class="query-input-wrapper">
+                        <textarea 
+                            id="queryInput" 
+                            class="query-input" 
+                            placeholder="Ask anything about your organization's documents, proposals, reports, or data...&#10;&#10;Examples:&#10;• What is our Q4 expansion strategy?&#10;• Compare sales performance with last year&#10;• Show me all proposals for Client X"
+                        ></textarea>
+                    </div>
+                    <div class="query-actions">
+                        <div class="cost-indicator">
+                            <span>Estimated Cost:</span>
+                            <span class="cost-badge" id="costEstimate">$0.02</span>
+                            <span id="memoryIndicator" style="display: none; margin-left: 1rem; color: var(--success-green); font-weight: 600;">
+                                🧠 Memory: <span id="memoryCount">0</span> messages
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+                            <button class="btn btn-primary" id="submitBtn">Ask Question</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <!-- ChatGPT-style Scrollable Chat Container -->
+                <div id="chatContainer" style="max-height: 600px; overflow-y: auto; background: #f8f9ff; border-radius: 12px; padding: 1.5rem; margin-top: 2rem; display: none;">
+                    <div id="chatMessages"></div>
+                    
+                    <!-- Loading indicator inside chat -->
+                    <div class="loading" id="loading" style="display: none; background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <div class="spinner"></div>
+                        <p style="color: var(--kpmg-gray); margin: 0.5rem 0 0 0;">Processing your query...</p>
+                    </div>
+                </div>
+
+                <!-- Hidden old response section for compatibility -->
+                <div class="response-section" id="responseSection" style="display: none;">
+                    <div class="response-header">
+                        <div class="response-title">Answer</div>
+                        <div class="response-meta">
+                            <span class="meta-badge mode-badge" id="modeUsed">AUTO</span>
+                            <span class="meta-badge confidence-badge" id="confidenceScore">92%</span>
+                        </div>
+                    </div>
+
+                    <div class="response-content" id="responseContent">
+                        <!-- Answer will be displayed here -->
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="apiCalls">1</div>
+                            <div class="stat-label">API Calls</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="actualCost">$0.02</div>
+                            <div class="stat-label">Actual Cost</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTokens">0</div>
+                            <div class="stat-label">Total Tokens</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="responseTime">1.2s</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="sourcesCount">3</div>
+                            <div class="stat-label">Sources Used</div>
+                        </div>
+                    </div>
+
+                    <div class="sources-section">
+                        <div class="sources-title">📚 Sources</div>
+                        <div id="sourcesContainer">
+                            <!-- Sources will be displayed here -->
+                        </div>
+                    </div>
+
+                    <div class="reasoning-section" id="reasoningSection" style="display: none;">
+                        <div class="reasoning-title">🧠 Agent Reasoning Steps</div>
+                        <div id="reasoningSteps">
+                            <!-- Reasoning steps will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let selectedMode = 'auto';
+        let startTime;
+        
+        // Conversation memory - stores last 5 Q&A pairs
+        let conversationHistory = [];
+
+        // Mode selection
+        document.querySelectorAll('.mode-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.mode-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedMode = this.dataset.mode;
+                updateCostEstimate();
+            });
+        });
+
+        // Update cost estimate based on mode and consultant toggle
+        function updateCostEstimate() {
+            const isConsultant = document.getElementById('consultantToggle')?.checked || false;
+            const costs = {
+                'rag': isConsultant ? '$0.03' : '$0.02',
+                'agentic': isConsultant ? '$0.12' : '$0.10',
+                'auto': isConsultant ? '$0.03-0.12' : '$0.02-0.10'
+            };
+            document.getElementById('costEstimate').textContent = costs[selectedMode] || '$0.02';
+        }
+
+        // Listen for consultant toggle changes
+        document.getElementById('consultantToggle').addEventListener('change', updateCostEstimate);
+
+        // Clear button
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('queryInput').value = '';
+            document.getElementById('errorMessage').classList.remove('visible');
+            document.getElementById('chatMessages').innerHTML = ''; // Clear chat
+            document.getElementById('chatContainer').style.display = 'none';
+            conversationHistory = []; // Clear conversation memory
+            updateMemoryIndicator();
+            console.log('✓ Conversation history cleared');
+        });
+
+        // Submit query
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const query = document.getElementById('queryInput').value.trim();
+            
+            if (!query) {
+                showError('Please enter a question');
+                return;
+            }
+
+            await submitQuery(query);
+        });
+
+        // Enter key to submit
+        document.getElementById('queryInput').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('submitBtn').click();
+            }
+        });
+
+        async function submitQuery(query) {
+            startTime = Date.now();
+            
+            // Enhance query with conversation context if available
+            let enhancedQuery = query;
+            if (conversationHistory.length > 0) {
+                const context = conversationHistory.map(h => `Q: ${h.query}\nA: ${h.answer.substring(0, 200)}...`).join('\n\n');
+                enhancedQuery = `[Previous conversation context:\n${context}]\n\nCurrent question: ${query}`;
+            }
+            
+            // Show chat container and add user message
+            const chatContainer = document.getElementById('chatContainer');
+            const chatMessages = document.getElementById('chatMessages');
+            chatContainer.style.display = 'block';
+            
+            // Add user message bubble
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message';
+            userMessage.innerHTML = `<div class="chat-bubble user-bubble">${query}</div>`;
+            chatMessages.appendChild(userMessage);
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('errorMessage').classList.remove('visible');
+            document.getElementById('submitBtn').disabled = true;
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                // Check if consultant style is enabled
+                const isConsultant = document.getElementById('consultantToggle').checked;
+                
+                let endpoint;
+                if (isConsultant) {
+                    // Consultant style with selected mode
+                    endpoint = selectedMode === 'agentic' ? '/query/agentic?consultant=true' : '/query/consultant';
+                } else {
+                    // Normal mode
+                    endpoint = selectedMode === 'auto' ? '/query/auto' : 
+                               selectedMode === 'agentic' ? '/query/agentic' : '/query';
+                }
+
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: enhancedQuery,
+                        top_k: 5,
+                        client_filter: document.getElementById('departmentFilter').value || null,
+                        sensitivity_filter: document.getElementById('sensitivityFilter').value || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success' || data.status === 'success_with_sanitization') {
+                    // Store in conversation history (keep last 5)
+                    conversationHistory.push({
+                        query: query,
+                        answer: data.answer
+                    });
+                    if (conversationHistory.length > 5) {
+                        conversationHistory.shift(); // Remove oldest
+                    }
+                    
+                    // Update memory indicator
+                    updateMemoryIndicator();
+                    
+                    // Hide loading
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    // Add assistant message bubble
+                    const assistantMessage = document.createElement('div');
+                    assistantMessage.className = 'chat-message';
+                    const answerHtml = marked.parse(data.answer || '');
+                    const mode = data.mode || selectedMode.toUpperCase();
+                    const confidence = Math.round((data.confidence || 0) * 100);
+                    
+                    assistantMessage.innerHTML = `
+                        <div class="chat-bubble assistant-bubble">
+                            ${answerHtml}
+                        </div>
+                        <div class="message-meta" style="align-self: flex-start; margin-left: 1rem;">
+                            <span class="meta-badge mode-badge" style="background: var(--kpmg-blue); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; margin-right: 0.5rem;">${mode}</span>
+                            <span class="meta-badge confidence-badge" style="background: var(--success-green); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">${confidence}%</span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(assistantMessage);
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                } else if (data.status === 'blocked') {
+                    showError(`Query blocked: ${data.reason}`);
+                } else {
+                    showError(data.message || 'An error occurred');
+                }
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                document.getElementById('loading').classList.remove('visible');
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        function useQuestion(element) {
+            document.getElementById('queryInput').value = element.textContent;
+            document.getElementById('queryInput').focus();
+        }
+
+        function updateMemoryIndicator() {
+            const indicator = document.getElementById('memoryIndicator');
+            const count = document.getElementById('memoryCount');
+            
+            if (conversationHistory.length > 0) {
+                indicator.style.display = 'inline';
+                count.textContent = conversationHistory.length;
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function updateChatHistory() {
+            const chatHistory = document.getElementById('chatHistory');
+            const chatContent = document.getElementById('chatHistoryContent');
+            
+            if (conversationHistory.length === 0) {
+                chatHistory.style.display = 'none';
+                return;
+            }
+            
+            chatHistory.style.display = 'block';
+            chatContent.innerHTML = '';
+            
+            // Show all messages except the last one (which is shown in main response)
+            for (let i = 0; i < conversationHistory.length - 1; i++) {
+                const msg = conversationHistory[i];
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'chat-question';
+                questionDiv.textContent = `Q: ${msg.query}`;
+                
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'chat-answer';
+                answerDiv.innerHTML = marked.parse(msg.answer.substring(0, 200) + '...');
+                
+                messageDiv.appendChild(questionDiv);
+                messageDiv.appendChild(answerDiv);
+                chatContent.appendChild(messageDiv);
+            }
+        }
+
+        function displayResponse(data) {
+            const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+            // Show response section
+            document.getElementById('responseSection').classList.add('visible');
+
+            // Display answer with markdown rendering
+            const answerHtml = marked.parse(data.answer || '');
+            document.getElementById('responseContent').innerHTML = answerHtml;
+
+            // Display metadata
+            document.getElementById('modeUsed').textContent = data.mode || 'RAG';
+            document.getElementById('confidenceScore').textContent = `${Math.round(data.confidence * 100)}%`;
+            document.getElementById('apiCalls').textContent = data.api_calls || 1;
+            document.getElementById('actualCost').textContent = `$${(data.cost_estimate || 0.02).toFixed(4)}`;
+            document.getElementById('totalTokens').textContent = data.total_tokens || 0;
+            document.getElementById('totalTokens').title = `Input: ${data.input_tokens || 0} | Output: ${data.output_tokens || 0}`;
+            document.getElementById('responseTime').textContent = `${responseTime}s`;
+            document.getElementById('sourcesCount').textContent = data.sources?.length || 0;
+
+            // Display sources
+            const sourcesContainer = document.getElementById('sourcesContainer');
+            sourcesContainer.innerHTML = '';
+            
+            if (data.sources && data.sources.length > 0) {
+                data.sources.forEach(source => {
+                    const sourceCard = document.createElement('div');
+                    sourceCard.className = 'source-card';
+                    sourceCard.innerHTML = `
+                        <div class="source-header">
+                            <div class="source-doc">📄 ${source.document_id || source.chunk_id}</div>
+                            <div class="source-confidence">${Math.round((source.confidence || 0.9) * 100)}% confidence</div>
+                        </div>
+                        <div class="step-content">${source.text ? source.text.substring(0, 150) + '...' : ''}</div>
+                    `;
+                    sourcesContainer.appendChild(sourceCard);
+                });
+            }
+
+            // Display reasoning steps (for agentic mode)
+            const reasoningSection = document.getElementById('reasoningSection');
+            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                reasoningSection.style.display = 'block';
+                const reasoningSteps = document.getElementById('reasoningSteps');
+                reasoningSteps.innerHTML = '';
+                
+                data.reasoning_steps.forEach((step, index) => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'reasoning-step';
+                    stepDiv.innerHTML = `
+                        <div class="step-header">Step ${index + 1}: ${step.action || 'Thinking'}</div>
+                        <div class="step-content">
+                            <strong>Thought:</strong> ${step.thought || 'Processing...'}<br>
+                            ${step.observation ? `<strong>Result:</strong> ${step.observation.substring(0, 200)}...` : ''}
+                        </div>
+                    `;
+                    reasoningSteps.appendChild(stepDiv);
+                });
+            } else {
+                reasoningSection.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('visible');
+        }
+    </script>
+</body>
+</html>

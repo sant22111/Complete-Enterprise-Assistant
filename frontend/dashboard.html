@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise RAG - System Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #2d3748;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pipeline-stage {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #cbd5e0;
+            transition: all 0.3s;
+        }
+
+        .pipeline-stage.active {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .pipeline-stage.processing {
+            border-left-color: #ed8936;
+            background: #fffaf0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .stage-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: #e2e8f0;
+        }
+
+        .stage-icon.active {
+            background: #48bb78;
+            color: white;
+        }
+
+        .stage-icon.processing {
+            background: #ed8936;
+            color: white;
+        }
+
+        .stage-info {
+            flex: 1;
+        }
+
+        .stage-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stage-status {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .log-viewer {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 3px solid #4a5568;
+        }
+
+        .log-entry.info {
+            border-left-color: #4299e1;
+        }
+
+        .log-entry.success {
+            border-left-color: #48bb78;
+        }
+
+        .log-entry.warning {
+            border-left-color: #ed8936;
+        }
+
+        .log-entry.error {
+            border-left-color: #f56565;
+        }
+
+        .timestamp {
+            color: #a0aec0;
+            margin-right: 10px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge.warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .query-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .flow-step {
+            flex: 1;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .flow-arrow {
+            font-size: 20px;
+            color: #a0aec0;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏗️ Enterprise RAG System Dashboard</h1>
+            <p>Real-time monitoring of the complete RAG pipeline - from ingestion to query response</p>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+                <button class="refresh-btn" onclick="reingestAll()" style="background: linear-gradient(135deg, #f56565 0%, #ed8936 100%);">🔄 Re-Ingest All Documents</button>
+                <button class="refresh-btn" onclick="generateReport()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">📊 Generate Report</button>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- Pipeline Visualization -->
+            <div class="card full-width">
+                <h2>📊 11-Layer Pipeline Status</h2>
+                <div class="pipeline" id="pipeline">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Ingestion Progress -->
+            <div class="card">
+                <h2>📥 Ingestion Progress</h2>
+                <div class="stat-item">
+                    <div class="stat-label">Documents Processed</div>
+                    <div class="stat-value" id="docs-processed">0</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="ingestion-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stats-grid" style="margin-top: 15px;">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Chunks</div>
+                        <div class="stat-value" id="total-chunks">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">PII Redactions</div>
+                        <div class="stat-value" id="pii-redactions">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Stats -->
+            <div class="card">
+                <h2>💾 Storage Systems</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Vector Store</div>
+                        <div class="stat-value" id="vector-chunks">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Keyword Index</div>
+                        <div class="stat-value" id="keyword-chunks">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Graph Entities</div>
+                        <div class="stat-value" id="graph-entities">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Relationships</div>
+                        <div class="stat-value" id="graph-relations">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Query Flow -->
+            <div class="card">
+                <h2>🔍 Last Query Flow</h2>
+                <div id="query-mode-badge">
+                    <span class="badge info">No queries yet</span>
+                </div>
+                <div class="query-flow">
+                    <div class="flow-step">Retrieval</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">LLM</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">Response</div>
+                </div>
+                <div class="stats-grid" style="margin-top: 15px;">
+                    <div class="stat-item">
+                        <div class="stat-label">API Calls</div>
+                        <div class="stat-value" id="api-calls">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Cost</div>
+                        <div class="stat-value" id="total-cost">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Tracking -->
+            <div class="card">
+                <h2>💰 Cost Tracking</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Input Tokens</div>
+                        <div class="stat-value" id="input-tokens">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Output Tokens</div>
+                        <div class="stat-value" id="output-tokens">0</div>
+                    </div>
+                </div>
+                <div class="stat-item" style="margin-top: 15px;">
+                    <div class="stat-label">Embedding API (Cohere)</div>
+                    <div class="stat-value" style="font-size: 16px; color: #48bb78;">FREE</div>
+                </div>
+            </div>
+
+            <!-- Live Logs -->
+            <div class="card full-width">
+                <h2>📋 Live System Logs</h2>
+                <div class="log-viewer" id="logs">
+                    <div class="log-entry info">
+                        <span class="timestamp">[Loading...]</span>
+                        <span>Fetching system logs...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let lastQueryData = null;
+
+        // Pipeline stages
+        const pipelineStages = [
+            { name: 'Mock SharePoint', icon: '📁', status: 'Documents loaded' },
+            { name: 'PII Detection', icon: '🔍', status: 'Scanning for sensitive data' },
+            { name: 'Audit Logging', icon: '📝', status: 'Tracking redactions' },
+            { name: 'Smart Chunking', icon: '✂️', status: 'Splitting documents' },
+            { name: 'Metadata Enrichment', icon: '🏷️', status: 'Adding context' },
+            { name: 'Vector Store', icon: '🧠', status: 'Semantic embeddings' },
+            { name: 'Keyword Index', icon: '🔤', status: 'BM25 indexing' },
+            { name: 'Knowledge Graph', icon: '🕸️', status: 'Entity relationships' },
+            { name: 'Hybrid Retrieval', icon: '🎯', status: 'Multi-source search' },
+            { name: 'LLM Pipeline', icon: '🤖', status: 'Maker→Checker→Judge' },
+            { name: 'Guardrails', icon: '🛡️', status: 'Safety checks' }
+        ];
+
+        function renderPipeline() {
+            const pipeline = document.getElementById('pipeline');
+            pipeline.innerHTML = pipelineStages.map((stage, index) => `
+                <div class="pipeline-stage ${index < 8 ? 'active' : ''}">
+                    <div class="stage-icon ${index < 8 ? 'active' : ''}">${stage.icon}</div>
+                    <div class="stage-info">
+                        <div class="stage-name">${stage.name}</div>
+                        <div class="stage-status">${stage.status}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function fetchIngestionStats() {
+            try {
+                const response = await fetch(`${API_BASE}/debug/ingestion`);
+                const data = await response.json();
+                
+                if (data.ingestion_stats) {
+                    document.getElementById('docs-processed').textContent = 
+                        data.ingestion_stats.successfully_ingested || 0;
+                    document.getElementById('total-chunks').textContent = 
+                        data.ingestion_stats.total_chunks || 0;
+                    
+                    const progress = Math.min(100, (data.ingestion_stats.total_documents_ingested / 100) * 100);
+                    document.getElementById('ingestion-progress').style.width = progress + '%';
+                }
+            } catch (error) {
+                console.error('Error fetching ingestion stats:', error);
+            }
+        }
+
+        async function fetchStorageStats() {
+            try {
+                const response = await fetch(`${API_BASE}/debug/storage-stats`);
+                const data = await response.json();
+                
+                if (data.storage_stats) {
+                    document.getElementById('vector-chunks').textContent = 
+                        data.storage_stats.vector_store?.total_chunks || 0;
+                    document.getElementById('keyword-chunks').textContent = 
+                        data.storage_stats.keyword_index?.total_chunks || 0;
+                    document.getElementById('graph-entities').textContent = 
+                        data.storage_stats.knowledge_graph?.total_entities || 0;
+                    document.getElementById('graph-relations').textContent = 
+                        data.storage_stats.knowledge_graph?.total_relationships || 0;
+                }
+            } catch (error) {
+                console.error('Error fetching storage stats:', error);
+            }
+        }
+
+        async function fetchAuditLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/debug/audit`);
+                const data = await response.json();
+                
+                if (data.audit_logs && data.audit_logs.length > 0) {
+                    const totalRedactions = data.audit_logs.reduce((sum, log) => 
+                        sum + (log.redactions_count || 0), 0);
+                    document.getElementById('pii-redactions').textContent = totalRedactions;
+                    
+                    // Display all logs
+                    const logsDiv = document.getElementById('logs');
+                    logsDiv.innerHTML = data.audit_logs.reverse().map(log => `
+                        <div class="log-entry ${log.redactions_count > 0 ? 'warning' : 'success'}">
+                            <span class="timestamp">[${new Date(log.timestamp).toLocaleTimeString()}]</span>
+                            <span>Document ${log.document_id}: ${log.redactions_count} PII items redacted</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error fetching audit logs:', error);
+            }
+        }
+
+        function updateQueryStats() {
+            if (lastQueryData) {
+                document.getElementById('api-calls').textContent = lastQueryData.api_calls || 0;
+                document.getElementById('total-cost').textContent = 
+                    '$' + (lastQueryData.cost_estimate || 0).toFixed(4);
+                document.getElementById('input-tokens').textContent = 
+                    (lastQueryData.input_tokens || 0).toLocaleString();
+                document.getElementById('output-tokens').textContent = 
+                    (lastQueryData.output_tokens || 0).toLocaleString();
+                
+                const mode = lastQueryData.mode || 'UNKNOWN';
+                const badgeClass = mode === 'AGENTIC' ? 'warning' : mode === 'RAG' ? 'success' : 'info';
+                document.getElementById('query-mode-badge').innerHTML = 
+                    `<span class="badge ${badgeClass}">${mode} Mode</span>`;
+            }
+        }
+
+        async function refreshAll() {
+            renderPipeline();
+            await Promise.all([
+                fetchIngestionStats(),
+                fetchStorageStats(),
+                fetchAuditLogs()
+            ]);
+            updateQueryStats();
+        }
+
+        async function reingestAll() {
+            // Confirm with user
+            if (!confirm('This will clear all storage and re-ingest all documents.\n\nThis is perfect for showing the live pipeline process!\n\nContinue?')) {
+                return;
+            }
+
+            try {
+                // Show loading state
+                const logsDiv = document.getElementById('logs');
+                logsDiv.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>🔄 Re-ingestion started... Clearing all storage systems...</span>
+                    </div>
+                `;
+
+                // Trigger re-ingestion
+                const response = await fetch(`${API_BASE}/ingest/reingest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show success
+                logsDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>✓ Re-ingestion complete! ${data.ingestion_results.successfully_ingested} documents, ${data.ingestion_results.total_chunks} chunks created</span>
+                    </div>
+                ` + logsDiv.innerHTML;
+
+                // Refresh all stats
+                await refreshAll();
+
+                alert(`✓ Re-ingestion successful!\n\n${data.ingestion_results.successfully_ingested} documents processed\n${data.ingestion_results.total_chunks} chunks created`);
+
+            } catch (error) {
+                console.error('Error during re-ingestion:', error);
+                alert(`⚠️ Re-ingestion failed: ${error.message}`);
+            }
+        }
+
+        async function generateReport() {
+            try {
+                const response = await fetch(`${API_BASE}/ingest/generate-report`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    alert(`✓ Report generated successfully!\n\nReport saved to:\n${data.report_file}\n\nCheck the 'reports/' folder in your project directory.`);
+                } else {
+                    alert(`⚠️ Report generation failed: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert(`⚠️ Report generation failed: ${error.message}`);
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(refreshAll, 5000);
+
+        // Initial load
+        refreshAll();
+
+        // Listen for query events from main page
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'lastQuery') {
+                lastQueryData = JSON.parse(e.newValue);
+                updateQueryStats();
+            }
+        });
+    </script>
+</body>
+</html>
