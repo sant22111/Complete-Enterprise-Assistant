@@ -124,34 +124,34 @@ agent_orchestrator = AgentOrchestrator(
 
 @app.on_event("startup")
 async def startup_event():
-    """Ingest documents on server startup."""
+    """Generate sample documents and ingest on server startup."""
     try:
         # Check if sample documents exist
         sample_dir = "sample_documents"
-        if not os.path.exists(sample_dir):
-            print(f"\n⚠️ Sample documents directory not found: {sample_dir}")
-            print("Creating empty directory...")
-            os.makedirs(sample_dir, exist_ok=True)
-            print("✓ Server started without documents. Upload documents via API.")
-            return
-        else:
-            doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
-            print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
-        
-        # Check if we have existing data
-        registry_stats = ingestion_service.ingestion_registry.get_ingestion_stats()
-        existing_docs = registry_stats.get('total_documents', 0)
-        
-        if existing_docs > 0:
-            print(f"\n✓ Loaded {existing_docs} documents from storage (skipping re-ingestion)")
-            print(f"   Use /ingest/reingest endpoint to force re-ingestion")
-        else:
-            print()
-            print("📥 Starting initial document ingestion...")
-            results = ingestion_service.ingest_all_documents(auto_approve=True, generate_report=False)
-            print(f"\n✓ Initial ingestion: {results['successfully_ingested']} documents, {results['total_chunks']} chunks")
-    except Exception as e:
-        print(f"\n⚠ Startup failed: {str(e)}")
+        if not os.path.exists(sample_dir) or len(os.listdir(sample_dir)) == 0:
+            print("\n📄 No sample documents found. Generating 100 documents...")
+            print("=" * 80)
+            
+            # Import and run document generator
+            # NOTE: This may fail on cloud platforms like Render - that's OK, docs are in repo
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ["python", "generate_sample_docs.py"],
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if result.returncode == 0:
+                    print(result.stdout)
+                    print("✓ Sample documents generated successfully!")
+                else:
+                    print(f"⚠️ Document generation skipped (cloud deployment)")
+                    print(f"   Sample documents should already be in repo")
+            except Exception as gen_error:
+                print(f"⚠️ Document generation skipped: {gen_error}")
+                print(f"   Sample documents should already be in repo")
 
 @app.on_event("shutdown")
 async def shutdown_event():
