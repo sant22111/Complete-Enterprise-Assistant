@@ -5,7 +5,7 @@ services:
     runtime: python-3.11.0
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: OPEN_AI_KEY
