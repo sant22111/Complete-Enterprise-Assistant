@@ -2,6 +2,7 @@ services:
   - type: web
     name: enterprise-rag-assistant
     env: python
+    runtime: python-3.11.0
     region: oregon
     plan: free
     buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
@@ -9,5 +10,3 @@ services:
     envVars:
       - key: OPEN_AI_KEY
         sync: false
-      - key: PYTHON_VERSION
-        value: 3.11.0
