@@ -124,27 +124,16 @@ agent_orchestrator = AgentOrchestrator(
 
 @app.on_event("startup")
 async def startup_event():
-    """Generate sample documents and ingest on server startup."""
+    """Ingest documents on server startup."""
     try:
         # Check if sample documents exist
         sample_dir = "sample_documents"
-        if not os.path.exists(sample_dir) or len(os.listdir(sample_dir)) == 0:
-            print("\n📄 No sample documents found. Generating 100 documents...")
-            print("=" * 80)
-            
-            # Import and run document generator
-            import subprocess
-            result = subprocess.run(
-                ["python", "generate_sample_docs.py"],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode == 0:
-                print(result.stdout)
-                print("✓ Sample documents generated successfully!")
-            else:
-                print(f"⚠️ Error generating documents: {result.stderr}")
+        if not os.path.exists(sample_dir):
+            print(f"\n⚠️ Sample documents directory not found: {sample_dir}")
+            print("Creating empty directory...")
+            os.makedirs(sample_dir, exist_ok=True)
+            print("✓ Server started without documents. Upload documents via API.")
+            return
         else:
             doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
             print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
