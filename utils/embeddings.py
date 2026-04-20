@@ -45,6 +45,13 @@ class EmbeddingService:
             List of floats (1536 dimensions)
         """
         try:
+            # Truncate text if it exceeds token limit (8192 tokens ~= 32,000 chars)
+            # Conservative estimate: 1 token = 4 chars
+            max_chars = 8000 * 4  # 32,000 chars for safety
+            if len(text) > max_chars:
+                text = text[:max_chars]
+                print(f"⚠️ Text truncated from {len(text)} to {max_chars} chars for embedding")
+            
             response = self.client.embeddings.create(
                 input=text,
                 model='text-embedding-3-small'
@@ -86,6 +93,11 @@ class EmbeddingService:
             List of floats (1536 dimensions)
         """
         try:
+            # Truncate query if needed (queries are usually short, but just in case)
+            max_chars = 8000 * 4
+            if len(query) > max_chars:
+                query = query[:max_chars]
+            
             response = self.client.embeddings.create(
                 input=query,
                 model='text-embedding-3-small'
