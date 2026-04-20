@@ -156,18 +156,17 @@ async def startup_event():
             doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
             print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
         
-        # Check if we have existing data
+        # Always skip initial ingestion on startup to avoid deployment timeouts
+        # User can trigger ingestion manually via /ingest or /ingest/reingest endpoints
         registry_stats = ingestion_service.ingestion_registry.get_ingestion_stats()
         existing_docs = registry_stats.get('total_documents', 0)
         
         if existing_docs > 0:
-            print(f"\n✓ Loaded {existing_docs} documents from storage (skipping re-ingestion)")
-            print(f"   Use /ingest/reingest endpoint to force re-ingestion")
+            print(f"\n✓ Loaded {existing_docs} documents from storage")
         else:
-            print()
-            print("📥 Starting initial document ingestion...")
-            results = ingestion_service.ingest_all_documents(auto_approve=True, generate_report=False)
-            print(f"\n✓ Initial ingestion: {results['successfully_ingested']} documents, {results['total_chunks']} chunks")
+            print(f"\n⚠️  No documents ingested yet")
+        
+        print(f"   Trigger ingestion via: POST /ingest or POST /ingest/reingest")
     except Exception as e:
         print(f"\n⚠ Startup failed: {str(e)}")
 
