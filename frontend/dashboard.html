@@ -288,10 +288,11 @@
         <div class="header">
             <h1>🏗️ Enterprise RAG System Dashboard</h1>
             <p>Real-time monitoring of the complete RAG pipeline - from ingestion to query response</p>
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+                <button class="refresh-btn" onclick="retryFailed()" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">🔁 Retry Failed Documents</button>
                 <button class="refresh-btn" onclick="reingestAll()" style="background: linear-gradient(135deg, #f56565 0%, #ed8936 100%);">🔄 Re-Ingest All Documents</button>
-                <button class="refresh-btn" onclick="generateReport()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">📊 Generate Report</button>
+                <button class="refresh-btn" onclick="generateReport()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">� Download Report</button>
             </div>
         </div>
 
@@ -531,6 +532,55 @@
             updateQueryStats();
         }
 
+        async function retryFailed() {
+            // Confirm with user
+            if (!confirm('This will retry only failed/missing documents.\n\nSuccessfully ingested documents will NOT be affected.\n\nContinue?')) {
+                return;
+            }
+
+            try {
+                // Show loading state
+                const logsDiv = document.getElementById('logs');
+                logsDiv.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>🔁 Retrying failed documents...</span>
+                    </div>
+                `;
+
+                // Trigger retry
+                const response = await fetch(`${API_BASE}/ingest/retry-failed`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show success
+                logsDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>✓ Retry complete! ${data.ingestion_results.successfully_ingested}/${data.ingestion_results.total_documents} documents ingested</span>
+                    </div>
+                ` + logsDiv.innerHTML;
+
+                // Refresh all stats
+                await refreshAll();
+
+                alert(`✓ Retry successful!\n\n${data.ingestion_results.successfully_ingested} out of ${data.ingestion_results.total_documents} documents ingested\n${data.ingestion_results.failed_ingestions} still failed`);
+
+            } catch (error) {
+                console.error('Error during retry:', error);
+                alert(`⚠️ Retry failed: ${error.message}`);
+            }
+        }
+
         async function reingestAll() {
             // Confirm with user
             if (!confirm('This will clear all storage and re-ingest all documents.\n\nThis is perfect for showing the live pipeline process!\n\nContinue?')) {
@@ -582,19 +632,39 @@
 
         async function generateReport() {
             try {
-                const response = await fetch(`${API_BASE}/ingest/generate-report`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
+                // Show loading state
+                const logsDiv = document.getElementById('logs');
+                logsDiv.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>📊 Downloading latest ingestion report...</span>
+                    </div>
+                ` + logsDiv.innerHTML;
 
-                if (data.status === 'success') {
-                    alert(`✓ Report generated successfully!\n\nReport saved to:\n${data.report_file}\n\nCheck the 'reports/' folder in your project directory.`);
-                } else {
-                    alert(`⚠️ Report generation failed: ${data.message || 'Unknown error'}`);
-                }
+                // Download the latest report
+                const downloadUrl = `${API_BASE}/debug/download-report`;
+                
+                // Create a temporary link and trigger download
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = 'ingestion_report.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show success message
+                logsDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>✓ Report downloaded successfully!</span>
+                    </div>
+                ` + logsDiv.innerHTML;
+
+                alert('✓ Ingestion report downloaded!\n\nCheck your Downloads folder.');
+
             } catch (error) {
-                console.error('Error generating report:', error);
-                alert(`⚠️ Report generation failed: ${error.message}`);
+                console.error('Error downloading report:', error);
+                alert(`⚠️ Report download failed: ${error.message}`);
             }
         }
 

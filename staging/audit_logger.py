@@ -92,9 +92,12 @@ class AuditLogger:
         with open(self.log_path, 'r') as f:
             for line in f:
                 if line.strip():
-                    log_dict = json.loads(line)
-                    if log_dict.get("document_id") == document_id:
-                        logs.append(self._dict_to_audit_log(log_dict))
+                    try:
+                        log_dict = json.loads(line)
+                        if log_dict.get("document_id") == document_id:
+                            logs.append(self._dict_to_audit_log(log_dict))
+                    except json.JSONDecodeError:
+                        continue
         
         return logs
     
@@ -108,8 +111,11 @@ class AuditLogger:
         with open(self.log_path, 'r') as f:
             for line in f:
                 if line.strip():
-                    log_dict = json.loads(line)
-                    logs.append(self._dict_to_audit_log(log_dict))
+                    try:
+                        log_dict = json.loads(line)
+                        logs.append(self._dict_to_audit_log(log_dict))
+                    except json.JSONDecodeError:
+                        continue
         
         return logs
     

@@ -224,6 +224,39 @@ async def ingest_documents(request: IngestRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/ingest/retry-failed")
+async def retry_failed_documents():
+    """
+    Retry ingestion for only failed or missing documents.
+    Does NOT clear existing successfully ingested documents.
+    """
+    try:
+        print("\n🔄 RETRYING FAILED DOCUMENTS")
+        print("=" * 80)
+        
+        results = ingestion_service.ingest_failed_documents(auto_approve=True)
+        
+        # Get updated stats
+        stats = ingestion_service.get_ingestion_stats()
+        storage_stats = {
+            "vector_chunks": stats['vector_store_stats']['total_chunks'],
+            "keyword_chunks": stats['keyword_index_stats']['total_chunks'],
+            "graph_entities": stats['knowledge_graph_stats']['total_entities']
+        }
+        
+        print(f"✓ Retry complete: {results['successfully_ingested']}/{results['total_documents']} documents ingested")
+        print("=" * 80)
+        
+        return {
+            "status": "success",
+            "message": f"Retried {results['total_documents']} failed/missing documents",
+            "ingestion_results": results,
+            "storage_stats": storage_stats,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/ingest/reingest")
 async def reingest_all():
     """

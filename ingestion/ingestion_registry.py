@@ -121,17 +121,20 @@ class IngestionRegistry:
         with open(self.registry_path, 'r') as f:
             for line in f:
                 if line.strip():
-                    record_dict = json.loads(line)
-                    record = IngestionRecord(
-                        document_id=record_dict.get("document_id"),
-                        last_ingested=record_dict.get("last_ingested"),
-                        file_hash=record_dict.get("file_hash"),
-                        status=record_dict.get("status"),
-                        ingestion_timestamp=record_dict.get("ingestion_timestamp"),
-                        chunk_count=record_dict.get("chunk_count", 0),
-                        error_message=record_dict.get("error_message")
-                    )
-                    self.records[record.document_id] = record
+                    try:
+                        record_dict = json.loads(line)
+                        record = IngestionRecord(
+                            document_id=record_dict.get("document_id"),
+                            last_ingested=record_dict.get("last_ingested"),
+                            file_hash=record_dict.get("file_hash"),
+                            status=record_dict.get("status"),
+                            ingestion_timestamp=record_dict.get("ingestion_timestamp"),
+                            chunk_count=record_dict.get("chunk_count", 0),
+                            error_message=record_dict.get("error_message")
+                        )
+                        self.records[record.document_id] = record
+                    except json.JSONDecodeError:
+                        continue
     
     def _write_record(self, record: IngestionRecord):
         """Write record to registry file."""
