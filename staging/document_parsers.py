@@ -82,8 +82,14 @@ class DocumentParser:
     def parse_text(self, file_path: str) -> Dict[str, str]:
         """Extract text from plain text file."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                text = file.read()
+            # Try UTF-8 first
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    text = file.read()
+            except UnicodeDecodeError:
+                # Fall back to latin-1 (accepts all byte values)
+                with open(file_path, 'r', encoding='latin-1') as file:
+                    text = file.read()
             
             return {
                 'text': text,
@@ -99,8 +105,14 @@ class DocumentParser:
             rows = []
             row_count = 0
             
-            with open(file_path, 'r', encoding='utf-8') as file:
-                csv_reader = csv.DictReader(file)
+            # Try UTF-8 first, fall back to latin-1
+            try:
+                file_obj = open(file_path, 'r', encoding='utf-8')
+            except UnicodeDecodeError:
+                file_obj = open(file_path, 'r', encoding='latin-1')
+            
+            with file_obj:
+                csv_reader = csv.DictReader(file_obj)
                 headers = csv_reader.fieldnames if csv_reader.fieldnames else []
                 
                 for row in csv_reader:
