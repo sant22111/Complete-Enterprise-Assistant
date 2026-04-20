@@ -156,7 +156,12 @@ async def startup_event():
             doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
             print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
         
-        # Always skip initial ingestion on startup to avoid deployment timeouts
+        # Download pre-ingested storage from cloud if available
+        print()
+        from download_storage import download_and_extract_storage
+        download_and_extract_storage()
+        
+        # Skip auto-ingestion to avoid Render timeout
         # User can trigger ingestion manually via /ingest or /ingest/reingest endpoints
         registry_stats = ingestion_service.ingestion_registry.get_ingestion_stats()
         existing_docs = registry_stats.get('total_documents', 0)
