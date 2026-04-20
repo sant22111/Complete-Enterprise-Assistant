@@ -1,0 +1,90 @@
+﻿Mobile app development is the act or process by which a mobile app is developed for one or more mobile devices, which can include personal digital assistants (PDA), enterprise digital assistants (EDA), or mobile phones. Such software applications are specifically designed to run on mobile devices, after considering many hardware constraints. Common constraints include central processing unit (CPU) architecture and speeds, available random-access memory (RAM), limited data storage capacities, and considerable variation in displays (technology, size, dimensions, resolution) and input methods (buttons, keyboards, touch screens with or without styluses). These applications (or 'apps') can be pre-installed on phones during manufacturing or delivered as web applications, using server-side or client-side processing (e.g., JavaScript) to provide an "application-like" experience within a web browser.
+The mobile app development sector has experienced significant growth in Europe. A 2017 report from the Progressive Policy Institute estimated there were 1.89 million jobs in the app economy across the European Union (EU) by January 2017, marking a 15% increase from the previous year. These jobs include roles such as mobile app developers and other positions supporting the app economy.
+
+
+== Overview ==
+To facilitate developing applications for mobile devices, and the consistency thereof, various approaches have been taken.
+Most companies that ship a product (e.g., Apple, iPod/iPhone/iPad) provide an official software development kit (SDK). They may also opt to provide some form of software testing and/or quality assurance (QA). In exchange for being provided the SDK or other tools, it may be necessary for a prospective developer to sign some form of non-disclosure agreement (NDA), which restricts the sharing of privileged information.
+As part of the development process, mobile user interface (UI) design is an essential step in the creation of mobile apps. Mobile UI designers consider constraints, contexts, screen space, input methods, and mobility as outlines for design. Constraints in mobile UI design, which include the limited attention span of the user and form factors such as a mobile device's screen size for a user's hand(s). Mobile UI context includes signal cues from user activity, such as the location where or the time when the device is in use, that can be observed from user interactions within a mobile app. Such context clues can be used to provide automatic suggestions when scheduling an appointment or activity or to filter a list of various services for the user.
+The user is often the focus of interaction with their device, and the interface entails components of both hardware and software. User input allows for the users to manipulate a system, and the device's output allows the system to indicate the effects of the users' manipulation.
+Overall, mobile UI design's goal is mainly for an understandable, user-friendly interface. Functionality is supported by mobile enterprise application platforms or integrated development environments (IDEs).
+Developers of mobile applications must also consider a large array of devices with different screen sizes, hardware specifications, and configurations because of intense competition in mobile hardware and changes within each of the platforms.
+Today, mobile apps are usually distributed via an official online outlet or marketplace (e.g., Apple: The App Store – Google: Google Play) and there is a formalized process by which developers submit their apps for approval and inclusion in those marketplaces. Historically, however, that was not always the case.
+Mobile UIs, or front-ends, rely on mobile back-ends to support access to enterprise systems.  The mobile back-end facilitates data routing, security, authentication, authorization, working off-line, and service orchestration. This functionality is supported by a mix of middleware components, including mobile app servers, mobile backend as a service (MBaaS), and service-oriented architecture (SOA) infrastructure.
+
+
+== Platform ==
+The software development packages needed to develop, deploy, and manage mobile apps are made from many components and tools which allow a developer to write, test, and deploy applications for one or more target platforms.
+
+
+=== Front-end development tools ===
+Front-end development tools are focused on the user interface and user experience (UI-UX) and provide the following abilities:
+
+UI design tools
+SDKs to access device features
+Cross-platform accommodations/support
+Notable tools are listed below.
+
+
+==== First party ====
+First party tools include official SDKs published by, or on behalf of, the company responsible for the design of a given hardware platform (e.g., Apple, Google, etc.), and any third-party software that is officially supported for the purpose of developing mobile apps for that hardware.
+
+
+==== Second party ====
+
+
+==== Third party ====
+Third-party tools include cross-platform frameworks and engines that allow developers to write a single codebase and deploy it across multiple operating systems. 
+
+
+=== Back-end servers ===
+Back-end tools pick up where the front-end tools leave off, and provide a set of reusable services that are centrally managed and controlled and provide the following abilities:
+
+Integration with back-end systems
+User authentication-authorization
+Data services
+Reusable business logic
+Available tools include:
+
+
+=== Security add-on layers ===
+With bring your own device (BYOD) becoming the norm within more enterprises, IT departments often need stop-gap, tactical solutions that layer atop existing apps, phones, and platform component. Features include
+
+App wrapping for security
+Data encryption
+Client actions
+Reporting and statistics
+
+
+=== System software ===
+Historically, the mobile app development landscape was highly fragmented across numerous proprietary operating systems and system-level platforms. Prior to the market consolidating around iOS and Android, developers frequently built applications for platforms such as Symbian, Palm OS, webOS, BlackBerry OS, Windows Mobile, and Windows Phone.
+These legacy systems required specific, isolated development environments, such as utilizing BREW for early feature phones or the .NET Compact Framework for Windows CE devices. Today, the vast majority of these platforms are obsolete, and modern system software development is focused entirely on the iOS and Android ecosystems.
+Criteria for selecting a development platform usually include the target mobile platforms, existing infrastructure, and development skills. When targeting more than one platform with cross-platform development, it is also important to consider the impact of the tool on the user experience. Performance is another important criterion, as research on mobile apps indicates a strong correlation between application performance and user satisfaction. Along with performance and other criteria, the availability of the technology and the project's requirements may drive the development between native and cross-platform environments. Typically, cross-platform environments are reusable across multiple platforms, leveraging a native container while using HTML, CSS, and JavaScript for the user interface. In contrast, native environments are targeted at one platform for each of those environments. For example, modern Android development occurs in Android Studio using Kotlin or Java, while Apple iOS development occurs using the Xcode IDE with Swift or Objective-C.
+
+
+=== Mobile app testing ===
+Mobile applications are first tested within the development environment using emulators and later subjected to field testing. Emulators provide an inexpensive way to test applications on mobile phones to which developers may not have physical access. The following are examples of tools used for testing applications across the most popular mobile operating systems.
+Modern mobile application testing typically involves a combination of local emulation and cloud-based testing platforms:
+
+Beta Testing Platforms – Both major operating systems offer official platforms for distributing pre-release apps to beta testers. Apple provides TestFlight for distributing iOS, iPadOS, and macOS apps to internal and external testers. Google provides testing tracks within the Google Play Console to release early versions to internal teams or a broader audience of public testers.
+Cloud Device Farms – Services like Firebase Test Lab allow developers to test applications across a wide variety of real physical devices hosted in data centers, simulating different hardware and OS configurations to ensure compatibility.
+
+
+== Design principles ==
+According to a 2020 Industry Report on Applications, 46% of mobile app users have stated that they have stopped using or uninstalled an app due to poor performance. Design experts advocate for the following design principles to create successful and effective mobile apps:
+Clutter-free screens – Keeps interactions quick and simple, allowing users to focus on one specific task rather than being overwhelmed with multiple features and tasks. Design experts strongly advocate for one task per screen and recommend breaking down long forms into pages and progressively revealing new tasks or fields to minimize clutter.
+Reduce cognitive load – Makes the use of the app as seamless as possible, and preserves natural flow through the app. Design experts suggest incorporating autocomplete, spell-check, predictive text assistance, and dropdown menus to reduce cognitive load. Design experts also recommend the state of the app be preserved when users temporarily leave the app and re-enter so that users can continue their use from where they left off.
+Simple navigation – Around 11% of people have uninstalled apps due to their complicated interface. Design experts state it is paramount to present the navigation bar visibly in your app to help users navigate to frequently used and high-priority screens instantly. They suggest the use of recognizable icons specific to the device operating system to help users easily take actions such as opening a menu, changing settings, going back a screen, and searching within a page. According to them, a user should not be confused while navigating the app, so an orderly, clear, and logical navigation flow drives engagement and discovery in the app.
+Notifications – It's reported that around 19% of users uninstall an app due to frequent push notifications. Notifications should be sent with careful planning according to design experts. Experts state notifications should be sent at a time most convenient to users in their time zone and the messages should be personalized to bring great value to them.
+Speed appearance – About 19% of people uninstall apps due to hang up issues. Design experts state it's important to make sure the app is fast and responsive so that users don't have to wait for content. They state developers should deliver content faster or give the perception of progress. Some approaches suggested by the experts are the use of skeleton screens which show the layout of the app with content grayed out, progress bars or loading spinners, tasks being carried out in the background and delivering the content quickly when the user requests for it, or giving users some tasks or content while they are waiting for a page to load.
+Usability – Approximately 85% of mobile users use their phone with one hand, thus design experts state it is important that the top-level menu, frequently used controls, and common action items are within the reach of the user's thumb. Modern platform guidelines, such as Apple's Human Interface Guidelines (HIG) and Google's Material Design, emphasize accessibility and dynamic typography. Instead of hardcoding fixed font sizes, these guidelines require using scalable, dynamic type systems that automatically adapt to a user's system-wide accessibility settings. Design experts strongly encourage developers to make apps accessible for all users including people with disabilities, suggesting features such as voice navigation, screen reader compatibility, and user interface adaptability.
+
+
+== Patents ==
+Many patent applications are pending for new mobile phone apps. Most of these are in the technological fields of business methods, database management, data transfer, and operator interface.
+
+
+== See also ==
+
+
+== References ==

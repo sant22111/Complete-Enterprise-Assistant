@@ -1,0 +1,43 @@
+﻿Continuous deployment (CD) is a software engineering approach in which software functionalities are delivered frequently and through automated deployments.
+Continuous deployment contrasts with continuous delivery (also abbreviated CD), a similar approach in which software functionalities are also frequently delivered and deemed to be potentially capable of being deployed, but are actually not deployed. As such, continuous deployment can be viewed as a more complete form of automation than continuous delivery.
+Continuous deployment has been adopted by software companies such as Meta, Microsoft, Atlassian, IBM, Adobe, and Tesla.
+
+
+== Principles ==
+
+Continuous deployment extends the principles of continuous integration and delivery by including fully automated production deployment without the need for manual approval, instead relying on rigorous automated testing. Reviews may still take place in the form developer-developer code reviews, but the need for intermediary reviewers such as a change-advisory board is minimized.
+Because code changes are deployed automatically, continuous deployment requires a much higher standard of automated testing, as test quality determines the reliability of releases. Without this, the risk of introducing production failures outweighs the benefits of deployment automation.
+In addition, continuous deployment emphasizes small incremental changes and dark launches through the use of feature toggles. Developers can deploy code into production months before a public release by gradually adding functionality in small chunks, verifying stability, and then enabling the feature for users when it is considered ready.
+
+
+== Motivation ==
+
+
+=== Release speed ===
+Continuous deployment removes the need to wait for releases, as once a change passes internal testing it is automatically deployed to production. This allows for shorter time-to-market and more frequent releases, which in turn increases customer satisfaction and provides companies with more marketing opportunities.
+
+
+=== Faster bug detection ===
+A major motivation for continuous deployment is that deploying software into the field more often makes it easier to find, catch, and fix bugs. Deploying small, incremental changes makes it easier to trace the origin of bugs, since issues will be isolated to a recent and relatively small code change.
+
+
+=== Customer experience and involvement ===
+Under this methodology, new software features can be released to customers more quickly and frequently after their development, accelerating the delivery of value to customers and enhancing customer satisfaction. Teams can begin to collect customer feedback almost immediately, driving rapid innovation of relevant features.
+
+
+== Challenges ==
+Continuous delivery requires a significant investment in adequate test coverage, real-time monitoring, and strong continuous integration pipelines to prevent bugs from reaching production. Customers may also find software that is constantly changing creates a learning curve which can negatively affect their experience.
+Moving to continuous delivery is also a culture shift for developers who are accustomed to traditional release cycles, often requiring a proven DevOps process. Adopting this process requires collaboration among multiple stakeholders, including development teams, leadership, operations, and quality assurance. A 2007 study recorded one company manager's reaction to continuous delivery: "When the release team and I confronted the developers with our new process - releasing a story as soon as it is signed off - it scared the hell out of them."
+
+
+== Example ==
+In an environment in which data-centric microservices provide the functionality, and where the microservices can have multiple instances, continuous deployment consists of instantiating the new version of a microservice and retiring the old version once it has drained all the requests in flight.
+
+
+== See also ==
+CI/CD, the combined practices of either (more often) continuous integration and continuous delivery, or (less often) continuous integration and continuous deployment
+Canary release
+Blue–green deployment
+
+
+== References ==
