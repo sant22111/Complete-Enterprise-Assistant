@@ -52,97 +52,110 @@ class IngestionService:
         self.embedding_service = EmbeddingService()
         self.report_generator = IngestionReportGenerator()
     
-    def ingest_all_documents(self, auto_approve: bool = True, generate_report: bool = True) -> Dict:
-        """
-        Ingest all documents from SharePoint.
-        Supports delta ingestion (only new/updated files).
-        
-        Args:
-            auto_approve: Auto-approve documents in staging
-            generate_report: Generate detailed ingestion report
-        """
-        start_time = time.time()
-        documents = self.sharepoint_api.list_documents()
-        
-        ingestion_results = {
-            "total_documents": len(documents),
-            "successfully_ingested": 0,
-            "failed_ingestions": 0,
-            "total_chunks": 0,
-            "ingested_documents": [],
-            "failed_documents": [],
-            "enriched_metadata": []  # Track CRM enrichment
+def ingest_all_documents(self, auto_approve: bool = True, generate_report: bool = True) -> Dict:
+    """Ingest all documents from SharePoint with parallel processing."""
+    start_time = time.time()
+    
+    documents = self.sharepoint_api.list_documents()
+    total_docs = len(documents)
+    
+    print(f"📥 Starting re-ingestion...")
+    
+    ingestion_results = {
+        "total_documents": total_docs,
+        "successfully_ingested": 0,
+        "failed_ingestions": 0,
+        "total_chunks": 0,
+        "ingested_documents": [],
+        "failed_documents": [],
+        "enriched_metadata": []
+    }
+    
+    # Process documents in parallel (4 workers)
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        # Submit all tasks
+        future_to_doc = {
+            executor.submit(self.ingest_document, doc["document_id"], auto_approve): (idx, doc["document_id"])
+            for idx, doc in enumerate(documents, 1)
         }
         
-        for idx, doc_metadata in enumerate(documents):
-            doc_id = doc_metadata["document_id"]
-            print(f"Processing {idx+1}/{len(documents)}: {doc_id}...", end=" ", flush=True)
+        # Process results as they complete
+        for future in as_completed(future_to_doc):
+            idx, doc_id = future_to_doc[future]
+            print(f"Processing {idx}/{total_docs}: {doc_id}... ", end="", flush=True)
             
-            result = self.ingest_document(
-                doc_id,
-                auto_approve=auto_approve
-            )
-            
-            if result["success"]:
-                print(f"✓ ({result['chunk_count']} chunks)")
-                ingestion_results["successfully_ingested"] += 1
-                ingestion_results["total_chunks"] += result["chunk_count"]
-                ingestion_results["ingested_documents"].append({
-                    "document_id": doc_id,
-                    "chunk_count": result["chunk_count"]
-                })
-                # Track enriched metadata for CRM stats
-                if result.get("enriched_metadata"):
-                    ingestion_results["enriched_metadata"].append(result["enriched_metadata"])
-            else:
-                print(f"✗ ({result['error']})")
+            try:
+                result = future.result()
+                
+                if result["success"]:
+                    print(f"✓ ({result['chunk_count']} chunks)")
+                    ingestion_results["successfully_ingested"] += 1
+                    ingestion_results["total_chunks"] += result["chunk_count"]
+                    ingestion_results["ingested_documents"].append({
+                        "document_id": doc_id,
+                        "chunk_count": result["chunk_count"]
+                    })
+                    if result.get("enriched_metadata"):
+                        ingestion_results["enriched_metadata"].append(result["enriched_metadata"])
+                else:
+                    print(f"✗ ({result['error']})")
+                    ingestion_results["failed_ingestions"] += 1
+                    ingestion_results["failed_documents"].append({
+                        "document_id": doc_id,
+                        "error": result["error"]
+                    })
+            except Exception as e:
+                print(f"✗ (Exception: {str(e)})")
                 ingestion_results["failed_ingestions"] += 1
                 ingestion_results["failed_documents"].append({
                     "document_id": doc_id,
-                    "error": result["error"]
+                    "error": str(e)
                 })
-        
-        # Auto-save storage to disk after ingestion
+    
+    # Auto-save storage to disk after ingestion
+    try:
+        self.vector_store.save_to_disk()
+        self.keyword_index.save_to_disk()
+        self.knowledge_graph.save_to_disk()
+    except Exception as e:
+        print(f"⚠️ Warning: Failed to save storage to disk: {str(e)}")
+    
+    # Calculate processing time
+    end_time = time.time()
+    ingestion_results["processing_time_seconds"] = end_time - start_time
+    
+    # Generate report if requested
+    if generate_report:
         try:
-            self.vector_store.save_to_disk()
-            self.keyword_index.save_to_disk()
-            self.knowledge_graph.save_to_disk()
-        except Exception as e:
-            print(f"⚠️ Warning: Failed to save storage to disk: {str(e)}")
-        
-        # Calculate processing time
-        end_time = time.time()
-        ingestion_results["processing_time_seconds"] = end_time - start_time
-        
-        # Generate report if requested
-        if generate_report:
-            try:
-                audit_logs = self.staging_pipeline.get_audit_logs()
-                storage_stats = {
-                    "vector_store": self.vector_store.get_stats(),
-                    "keyword_index": self.keyword_index.get_stats(),
-                    "knowledge_graph": self.knowledge_graph.get_stats()
+            audit_logs = self.staging_pipeline.get_audit_logs()
+            storage_stats = {
+                "vector_store": self.vector_store.get_stats(),
+                "keyword_index": self.keyword_index.get_stats(),
+                "knowledge_graph": self.knowledge_graph.get_stats()
+            }
+            
+            # Calculate CRM matching stats
+            crm_stats = None
+            if self.crm_metadata_enricher and ingestion_results["enriched_metadata"]:
+                matched_count = sum(1 for meta in ingestion_results["enriched_metadata"] if meta.get("crm_match"))
+                crm_stats = {
+                    "total_documents": len(ingestion_results["enriched_metadata"]),
+                    "matched_documents": matched_count,
+                    "match_rate": (matched_count / len(ingestion_results["enriched_metadata"]) * 100) if ingestion_results["enriched_metadata"] else 0
                 }
-                
-                # Calculate CRM matching stats
-                crm_stats = None
-                if self.crm_metadata_enricher and ingestion_results["enriched_metadata"]:
-                    crm_stats = self.report_generator.generate_crm_matching_stats(
-                        ingestion_results["enriched_metadata"]
-                    )
-                
-                report_file = self.report_generator.generate_report(
-                    ingestion_results=ingestion_results,
-                    audit_logs=audit_logs,
-                    storage_stats=storage_stats,
-                    crm_stats=crm_stats
-                )
-                ingestion_results["report_file"] = report_file
-                print(f"\n📊 Ingestion report generated: {report_file}")
-            except Exception as e:
-                print(f"⚠️ Warning: Failed to generate report: {str(e)}")
-        
-        return ingestion_results
+            
+            report_generator = IngestionReportGenerator()
+            report_path = report_generator.generate_report(
+                ingestion_results=ingestion_results,
+                audit_logs=audit_logs,
+                storage_stats=storage_stats,
+                crm_stats=crm_stats
+            )
+            print(f"📊 Ingestion report generated: {report_path}")
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to generate report: {str(e)}")
+    
+    return ingestion_results
     
     def ingest_document(self, document_id: str, auto_approve: bool = True) -> Dict:
         """
