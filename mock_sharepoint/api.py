@@ -66,7 +66,8 @@ class MockSharePointAPI:
             sensitivity = random.choice(["Internal", "Confidential", "Restricted"])
             year = random.choice([2023, 2024])
             
-            doc_id = f"doc_{idx:04d}"
+            # Use filename as doc_id (without extension)
+            doc_id = filename.rsplit('.', 1)[0]
             doc = SharePointDocument(
                 document_id=doc_id,
                 file_path=filepath,  # Use actual file path
