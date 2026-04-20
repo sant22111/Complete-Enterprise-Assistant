@@ -38,7 +38,7 @@ class MockSharePointAPI:
             return self._generate_sample_documents()
         
         # Get all document files
-        supported_extensions = ('.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt')
+        supported_extensions = ('.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt', '.csv')
         files = [f for f in os.listdir(docs_folder) if f.endswith(supported_extensions)]
         
         if not files:

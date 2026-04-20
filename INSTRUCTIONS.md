@@ -361,22 +361,47 @@ Location: @/C:/Users/sanat/CascadeProjects/windsurf-project/enterprise_rag/mock_
 
 How it works:
 
-python
+```python
 def _generate_sample_documents(self):
     # Loads REAL files from disk (sample_documents/)
     documents = []
     for filename in os.listdir("./sample_documents"):
-        if filename.endswith('.txt'):
-            with open(f"./sample_documents/{filename}", 'r') as f:
-                content = f.read()
+        if filename.endswith(('.txt', '.pdf', '.pptx', '.docx')):
+            # Reads file content
+            content = self._read_file(filename)
+            
+            # Generates SharePoint-style metadata
+            metadata = {
+                "client": "Flipkart",  # Auto-extracted from filename
+                "service_line": "Strategy & Operations",
+                "sector": "Retail & E-commerce",
+                "confidentiality": "Confidential",
+                "author": "Rajesh Kumar",
+                "created_date": "2024-01-15"
+            }
+            
             # Creates SharePointDocument object
-            documents.append(SharePointDocument(...))
+            documents.append(SharePointDocument(
+                document_id=f"DOC_{i}",
+                title=filename,
+                content=content,
+                metadata=metadata
+            ))
+    return documents
 Answer:
 
-✅ It creates 4 fixed .txt files from sample_documents/ folder
-Files: flipkart_proposal.txt, hdfc_technology.txt, airtel_operations.txt, apollo_financial.txt
-Each file has hardcoded PII (emails, phones) for demo purposes
-On server startup, main.py calls ingestion_service.ingest_all_documents() which reads these files
+✅ Loads 100 enterprise documents from sample_documents/ folder
+✅ File types: PDF, PowerPoint, Word, Text
+✅ Auto-generates metadata: Client, service line, sector, confidentiality
+✅ Includes PII for demo (emails, phones) to test redaction
+✅ On startup: main.py calls ingestion_service.ingest_all_documents()
+✅ Production-ready: Same API structure as real SharePoint - easy to swap
+
+Key files:
+
+Documents: sample_documents/*.{pdf,pptx,docx,txt}
+Mock API: mock_sharepoint/api.py
+Ingestion: ingestion/ingestion_service.py
 
 Q2 How can I view Full flow from Ingestion to query
 

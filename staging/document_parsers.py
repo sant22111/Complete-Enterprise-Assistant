@@ -1,15 +1,16 @@
 """
-Document parsers for PDF, PPT, and Word files.
+Document parsers for PDF, PPT, Word, and CSV files.
 """
 
 from typing import Dict
 import PyPDF2
 from pptx import Presentation
 from docx import Document
+import csv
 import os
 
 class DocumentParser:
-    """Multi-format document parser. Supports: PDF, PowerPoint, Word"""
+    """Multi-format document parser. Supports: PDF, PowerPoint, Word, CSV"""
     
     def parse_file(self, file_path: str) -> Dict[str, str]:
         """Parse document and extract text."""
@@ -23,6 +24,8 @@ class DocumentParser:
             return self.parse_word(file_path)
         elif ext == '.txt':
             return self.parse_text(file_path)
+        elif ext == '.csv':
+            return self.parse_csv(file_path)
         else:
             raise ValueError(f"Unsupported file type: {ext}")
     
@@ -88,4 +91,29 @@ class DocumentParser:
             }
         except Exception as e:
             print(f"Error parsing text {file_path}: {e}")
+            return {'text': '', 'metadata': {}}
+    
+    def parse_csv(self, file_path: str) -> Dict[str, str]:
+        """Extract text from CSV file."""
+        try:
+            rows = []
+            row_count = 0
+            
+            with open(file_path, 'r', encoding='utf-8') as file:
+                csv_reader = csv.DictReader(file)
+                headers = csv_reader.fieldnames if csv_reader.fieldnames else []
+                
+                for row in csv_reader:
+                    row_count += 1
+                    row_text = " | ".join([f"{k}: {v}" for k, v in row.items() if v])
+                    rows.append(row_text)
+            
+            text = "\n".join(rows)
+            
+            return {
+                'text': text,
+                'metadata': {'rows': row_count, 'columns': len(headers)}
+            }
+        except Exception as e:
+            print(f"Error parsing CSV {file_path}: {e}")
             return {'text': '', 'metadata': {}}
