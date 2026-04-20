@@ -29,9 +29,11 @@ env/
 *.swo
 *~
 
-data/
-logs/
-*.jsonl
+# Temporarily allow data/ and logs/ for pre-ingested storage transfer
+# Uncomment these after initial deployment if you want to ignore them again
+# data/
+# logs/
+# *.jsonl
 *.db
 *.sqlite
 
