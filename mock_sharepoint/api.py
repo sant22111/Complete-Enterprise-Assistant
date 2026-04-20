@@ -122,12 +122,19 @@ class MockSharePointAPI:
             "source_system": doc.source_system
         }
     
-    def download_document(self, document_id: str) -> Optional[str]:
-        """GET /download/{id} - Download document content."""
+    def download_document(self, document_id: str) -> str:
+        """Download document content from disk with encoding fallback."""
         if document_id not in self.documents:
             return None
         
-        return self.documents[document_id].file_content
+        doc = self.documents[document_id]
+        # Read file from disk with encoding fallback
+        try:
+            with open(doc.file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except UnicodeDecodeError:
+            with open(doc.file_path, 'r', encoding='latin-1') as f:
+                return f.read()
     
     def get_changes(self, since: Optional[str] = None) -> List[Dict]:
         """GET /changes?since=timestamp - Get delta updates (documents modified since timestamp)."""

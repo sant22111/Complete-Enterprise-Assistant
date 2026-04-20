@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
@@ -849,6 +849,34 @@ async def get_crm_by_client(client_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/debug/download-report")
+async def download_latest_report():
+    """Download the latest ingestion report as a text file."""
+    try:
+        reports_dir = "./reports"
+        if not os.path.exists(reports_dir):
+            raise HTTPException(status_code=404, detail="No reports directory found")
+        
+        # Get all report files
+        report_files = [f for f in os.listdir(reports_dir) if f.startswith("ingestion_report_") and f.endswith(".txt")]
+        
+        if not report_files:
+            raise HTTPException(status_code=404, detail="No ingestion reports found")
+        
+        # Sort by filename (contains timestamp) and get the latest
+        latest_report = sorted(report_files)[-1]
+        report_path = os.path.join(reports_dir, latest_report)
+        
+        return FileResponse(
+            path=report_path,
+            media_type="text/plain",
+            filename=latest_report
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -870,6 +898,7 @@ async def root():
             "query": "POST /query - Query knowledge base with hybrid retrieval",
             "audit_logs": "GET /debug/audit - View redaction audit logs",
             "ingestion_logs": "GET /debug/ingestion - View ingestion statistics",
+            "download_report": "GET /debug/download-report - Download latest ingestion report",
             "approve_document": "POST /debug/approve-document - Approve/reject staged documents",
             "storage_stats": "GET /debug/storage-stats - View storage system statistics",
             "health": "GET /health - Health check"
