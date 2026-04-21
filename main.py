@@ -156,23 +156,25 @@ async def startup_event():
             doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
             print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
         
-        # Skip storage download - will ingest on Render instead
-        # (Storage files too large for reliable transfer)
-        print("\n⚠️  Storage download disabled - will ingest on Render")
-        print("   Use POST /ingest/retry-failed to start ingestion")
-        
-        
-        # Skip auto-ingestion to avoid Render timeout
-        # User can trigger ingestion manually via /ingest or /ingest/reingest endpoints
+        # Check if documents need ingestion
         registry_stats = ingestion_service.ingestion_registry.get_ingestion_stats()
         existing_docs = registry_stats.get('total_documents', 0)
         
         if existing_docs > 0:
             print(f"\n✓ Loaded {existing_docs} documents from storage")
         else:
-            print(f"\n⚠️  No documents ingested yet")
-        
-        print(f"   Trigger ingestion via: POST /ingest or POST /ingest/reingest")
+            print(f"\n⚠️  No documents ingested yet - starting auto-ingestion...")
+            print(f"=" * 80)
+            
+            # Auto-ingest all documents on startup
+            try:
+                results = ingestion_service.ingest_all_documents(auto_approve=True)
+                print(f"\n✅ Auto-ingestion complete!")
+                print(f"   Successfully ingested: {results.get('successfully_ingested', 0)} documents")
+                print(f"   Total chunks: {results.get('total_chunks', 0)}")
+            except Exception as e:
+                print(f"\n❌ Auto-ingestion failed: {e}")
+                print(f"   You can manually trigger via: POST /ingest")
     except Exception as e:
         print(f"\n⚠ Startup failed: {str(e)}")
 
