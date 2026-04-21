@@ -43,7 +43,16 @@ def download_and_extract_storage():
         print("Extracting storage files...")
         temp_dir = tempfile.mkdtemp()
         
+        # Debug: Show what's in the zip
+        print("  Contents of zip file:")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            file_list = zip_ref.namelist()
+            for name in file_list[:10]:  # Show first 10 files
+                print(f"    {name}")
+            if len(file_list) > 10:
+                print(f"    ... and {len(file_list) - 10} more files")
+            
+            # Extract
             zip_ref.extractall(temp_dir)
         
         print("✓ Storage extracted to temp directory")
