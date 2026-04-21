@@ -7,6 +7,8 @@ import os
 import urllib.request
 import zipfile
 import sys
+import shutil
+import tempfile
 
 # URL to your storage backup (you'll need to replace this)
 STORAGE_URL = os.getenv('STORAGE_BACKUP_URL', '')
@@ -39,7 +41,6 @@ def download_and_extract_storage():
         
         # Extract the zip file
         print("Extracting storage files...")
-        import tempfile
         temp_dir = tempfile.mkdtemp()
         
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -62,7 +63,6 @@ def download_and_extract_storage():
                     src = os.path.join(nested_dir, item)
                     dst = os.path.join('.', item)
                     if os.path.exists(dst):
-                        import shutil
                         shutil.rmtree(dst)
                     shutil.move(src, dst)
                     print(f"    Moved {item}")
@@ -72,13 +72,11 @@ def download_and_extract_storage():
                 src = os.path.join(temp_dir, item)
                 dst = os.path.join('.', item)
                 if os.path.exists(dst):
-                    import shutil
                     shutil.rmtree(dst)
                 shutil.move(src, dst)
                 print(f"  Moved {item}")
         
         # Clean up temp directory
-        import shutil
         shutil.rmtree(temp_dir)
         
         # Clean up zip file
