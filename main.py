@@ -230,6 +230,73 @@ async def ingest_documents(request: IngestRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/ingest/batch")
+async def ingest_batch(start: int = 0, count: int = 20):
+    """
+    Ingest documents sequentially in batches to avoid memory issues.
+    
+    Args:
+        start: Starting document index
+        count: Number of documents to ingest (default 20)
+    """
+    try:
+        print(f"\n📦 BATCH INGESTION: Documents {start} to {start + count - 1}")
+        print("=" * 80)
+        
+        # Get all documents
+        all_docs = ingestion_service.sharepoint_api.list_documents()
+        batch_docs = all_docs[start:start + count]
+        
+        if not batch_docs:
+            return {
+                "status": "error",
+                "message": f"No documents found at index {start}",
+                "total_documents": len(all_docs)
+            }
+        
+        # Ingest sequentially
+        results = []
+        for i, doc in enumerate(batch_docs, 1):
+            doc_id = doc['document_id']
+            print(f"  [{i}/{len(batch_docs)}] Ingesting {doc_id}...", end=" ")
+            
+            try:
+                result = ingestion_service.ingest_document(
+                    document_id=doc_id,
+                    auto_approve=True
+                )
+                chunks = result.get('chunk_count', 0)
+                print(f"✓ ({chunks} chunks)")
+                results.append({"doc_id": doc_id, "chunks": chunks, "success": True})
+            except Exception as e:
+                print(f"✗ Error: {str(e)[:50]}")
+                results.append({"doc_id": doc_id, "error": str(e), "success": False})
+        
+        # Save storage
+        print("\nSaving to disk...")
+        vector_store.save_to_disk()
+        keyword_index.save_to_disk()
+        knowledge_graph.save_to_disk()
+        print("✓ Storage saved")
+        
+        # Get stats
+        stats = ingestion_service.get_ingestion_stats()
+        
+        return {
+            "status": "success",
+            "batch_range": f"{start}-{start + count - 1}",
+            "total_in_batch": len(batch_docs),
+            "successful": sum(1 for r in results if r.get('success')),
+            "failed": sum(1 for r in results if not r.get('success')),
+            "results": results,
+            "storage_stats": {
+                "total_chunks": stats['vector_store_stats']['total_chunks'],
+                "total_documents": stats['total_documents']
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/ingest/retry-failed")
 async def retry_failed_documents():
     """
