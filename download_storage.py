@@ -84,23 +84,42 @@ def download_and_extract_storage():
         
         # Verify extraction (use os.path.join for cross-platform paths)
         print("\nVerifying extracted files:")
+        print(f"Current working directory: {os.getcwd()}")
+        
         chunks_path = os.path.join('data', 'chroma_db', 'chunks.pkl')
+        abs_chunks = os.path.abspath(chunks_path)
         if os.path.exists(chunks_path):
-            print("✓ Vector store found")
+            size_mb = os.path.getsize(chunks_path) / (1024 * 1024)
+            print(f"✓ Vector store found ({size_mb:.2f} MB)")
         else:
             print(f"✗ Vector store NOT found at {chunks_path}")
+            print(f"  Absolute path: {abs_chunks}")
+            print(f"  Exists: {os.path.exists(abs_chunks)}")
             
         index_path = os.path.join('data', 'whoosh_index', 'index.pkl')
         if os.path.exists(index_path):
-            print("✓ Keyword index found")
+            size_mb = os.path.getsize(index_path) / (1024 * 1024)
+            print(f"✓ Keyword index found ({size_mb:.2f} MB)")
         else:
             print(f"✗ Keyword index NOT found at {index_path}")
             
         registry_path = os.path.join('logs', 'ingestion_registry.jsonl')
         if os.path.exists(registry_path):
-            print("✓ Ingestion registry found")
+            size_mb = os.path.getsize(registry_path) / (1024 * 1024)
+            print(f"✓ Ingestion registry found ({size_mb:.2f} MB)")
         else:
             print(f"✗ Ingestion registry NOT found at {registry_path}")
+        
+        # List what's actually in data/ directory
+        if os.path.exists('data'):
+            print(f"\nContents of data/ directory:")
+            for root, dirs, files in os.walk('data'):
+                level = root.replace('data', '').count(os.sep)
+                indent = ' ' * 2 * level
+                print(f'{indent}{os.path.basename(root)}/')
+                subindent = ' ' * 2 * (level + 1)
+                for file in files[:5]:  # Show first 5 files
+                    print(f'{subindent}{file}')
         
         print("=" * 80)
         print("✅ STORAGE READY - 171 documents pre-ingested!")
