@@ -163,10 +163,31 @@ async def startup_event():
         
         # Reload storage after extraction
         print("\nReloading storage from disk...")
-        vector_store.load_from_disk()
-        keyword_index.load_from_disk()
-        knowledge_graph.load_from_disk()
-        ingestion_service.ingestion_registry.load_registry()
+        try:
+            vector_store.load_from_disk()
+            print("  ✓ Vector store loaded")
+        except Exception as e:
+            print(f"  ⚠ Vector store load failed: {e}")
+        
+        try:
+            keyword_index.load_from_disk()
+            print("  ✓ Keyword index loaded")
+        except Exception as e:
+            print(f"  ⚠ Keyword index load failed: {e}")
+        
+        try:
+            knowledge_graph.load_from_disk()
+            print("  ✓ Knowledge graph loaded")
+        except Exception as e:
+            print(f"  ⚠ Knowledge graph load failed: {e}")
+        
+        try:
+            # Reload registry by re-initializing it
+            ingestion_service.ingestion_registry._load_registry()
+            print("  ✓ Ingestion registry loaded")
+        except Exception as e:
+            print(f"  ⚠ Ingestion registry load failed: {e}")
+        
         print("✓ Storage reloaded")
         
         # Skip auto-ingestion to avoid Render timeout

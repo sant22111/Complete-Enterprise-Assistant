@@ -82,22 +82,25 @@ def download_and_extract_storage():
         # Clean up zip file
         os.remove(zip_path)
         
-        # Verify extraction
+        # Verify extraction (use os.path.join for cross-platform paths)
         print("\nVerifying extracted files:")
-        if os.path.exists('data/chroma_db/chunks.pkl'):
+        chunks_path = os.path.join('data', 'chroma_db', 'chunks.pkl')
+        if os.path.exists(chunks_path):
             print("✓ Vector store found")
         else:
-            print("✗ Vector store NOT found at data/chroma_db/chunks.pkl")
+            print(f"✗ Vector store NOT found at {chunks_path}")
             
-        if os.path.exists('data/whoosh_index/index.pkl'):
+        index_path = os.path.join('data', 'whoosh_index', 'index.pkl')
+        if os.path.exists(index_path):
             print("✓ Keyword index found")
         else:
-            print("✗ Keyword index NOT found")
+            print(f"✗ Keyword index NOT found at {index_path}")
             
-        if os.path.exists('logs/ingestion_registry.jsonl'):
+        registry_path = os.path.join('logs', 'ingestion_registry.jsonl')
+        if os.path.exists(registry_path):
             print("✓ Ingestion registry found")
         else:
-            print("✗ Ingestion registry NOT found")
+            print(f"✗ Ingestion registry NOT found at {registry_path}")
         
         print("=" * 80)
         print("✅ STORAGE READY - 171 documents pre-ingested!")
