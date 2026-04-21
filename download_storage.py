@@ -39,21 +39,29 @@ def download_and_extract_storage():
         file_size_mb = os.path.getsize(zip_path) / (1024 * 1024)
         print(f"✓ Downloaded {file_size_mb:.2f} MB")
         
-        # Extract the zip file
+        # Extract the zip file with normalized paths
         print("Extracting storage files...")
         temp_dir = tempfile.mkdtemp()
         
-        # Debug: Show what's in the zip
-        print("  Contents of zip file:")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             file_list = zip_ref.namelist()
-            for name in file_list[:10]:  # Show first 10 files
-                print(f"    {name}")
-            if len(file_list) > 10:
-                print(f"    ... and {len(file_list) - 10} more files")
+            print(f"  Extracting {len(file_list)} files...")
             
-            # Extract
-            zip_ref.extractall(temp_dir)
+            # Extract each file, normalizing paths
+            for item in file_list:
+                # Normalize path separators (\ to /)
+                normalized_name = item.replace('\\', '/')
+                
+                # Extract to temp directory with normalized path
+                if item.endswith('/'):
+                    # It's a directory
+                    os.makedirs(os.path.join(temp_dir, normalized_name), exist_ok=True)
+                else:
+                    # It's a file
+                    target_path = os.path.join(temp_dir, normalized_name)
+                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                    with zip_ref.open(item) as source, open(target_path, 'wb') as target:
+                        target.write(source.read())
         
         print("✓ Storage extracted to temp directory")
         
