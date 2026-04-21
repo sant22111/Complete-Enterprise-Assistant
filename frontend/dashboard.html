@@ -290,9 +290,10 @@
             <p>Real-time monitoring of the complete RAG pipeline - from ingestion to query response</p>
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+                <button class="refresh-btn" onclick="batchIngest(0, 20)" style="background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);">📦 Ingest 20 Documents</button>
                 <button class="refresh-btn" onclick="retryFailed()" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">🔁 Retry Failed Documents</button>
                 <button class="refresh-btn" onclick="reingestAll()" style="background: linear-gradient(135deg, #f56565 0%, #ed8936 100%);">🔄 Re-Ingest All Documents</button>
-                <button class="refresh-btn" onclick="generateReport()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">� Download Report</button>
+                <button class="refresh-btn" onclick="generateReport()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">📊 Download Report</button>
             </div>
         </div>
 
@@ -530,6 +531,55 @@
                 fetchAuditLogs()
             ]);
             updateQueryStats();
+        }
+
+        async function batchIngest(start, count) {
+            // Confirm with user
+            if (!confirm(`This will ingest ${count} documents sequentially.\n\nContinue?`)) {
+                return;
+            }
+
+            try {
+                // Show loading state
+                const logsDiv = document.getElementById('logs');
+                logsDiv.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>📦 Ingesting ${count} documents (starting at ${start})...</span>
+                    </div>
+                `;
+
+                // Trigger batch ingest
+                const response = await fetch(`${API_BASE}/ingest/batch?start=${start}&count=${count}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show success
+                logsDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>✓ Batch complete! ${data.successful}/${data.total_in_batch} documents ingested</span>
+                    </div>
+                ` + logsDiv.innerHTML;
+
+                // Refresh all stats
+                await refreshAll();
+
+                alert(`✓ Batch ingestion successful!\n\n${data.successful} out of ${data.total_in_batch} documents ingested\n${data.failed} failed`);
+
+            } catch (error) {
+                console.error('Error during batch ingest:', error);
+                alert(`⚠️ Batch ingest failed: ${error.message}`);
+            }
         }
 
         async function retryFailed() {
