@@ -278,45 +278,59 @@ class IngestionService:
                 enriched_chunks.append(crm_chunk)
             
             chunk_count = 0
-            for enriched_chunk in enriched_chunks:
-                embedding = self.embedding_service.embed_text(enriched_chunk.cleaned_text)
-                
-                self.vector_store.add_chunk(
-                    chunk_id=enriched_chunk.chunk_id,
-                    document_id=enriched_chunk.document_id,
-                    text=enriched_chunk.cleaned_text,
-                    embedding=embedding,
-                    metadata=enriched_chunk.metadata
-                )
-                
-                self.keyword_index.add_chunk(
-                    chunk_id=enriched_chunk.chunk_id,
-                    document_id=enriched_chunk.document_id,
-                    text=enriched_chunk.cleaned_text,
-                    metadata=enriched_chunk.metadata
-                )
-                
-                # Extract entities and relationships from metadata (KPMG structure)
-                self.knowledge_graph.extract_entities_from_metadata(
-                    enriched_chunk.metadata,
-                    enriched_chunk.chunk_id
-                )
-                self.knowledge_graph.extract_relationships_from_metadata(
-                    enriched_chunk.metadata,
-                    enriched_chunk.chunk_id
-                )
-                
-                # Also extract from text as fallback
-                self.knowledge_graph.extract_entities_from_text(
-                    enriched_chunk.cleaned_text,
-                    enriched_chunk.chunk_id
-                )
-                self.knowledge_graph.extract_relationships_from_text(
-                    enriched_chunk.cleaned_text,
-                    enriched_chunk.chunk_id
-                )
-                
-                chunk_count += 1
+            for i, enriched_chunk in enumerate(enriched_chunks, 1):
+                try:
+                    print(f"  Processing chunk {i}/{len(enriched_chunks)}: {enriched_chunk.chunk_id[:50]}...")
+                    
+                    # Generate embedding
+                    embedding = self.embedding_service.embed_text(enriched_chunk.cleaned_text)
+                    print(f"    ✓ Embedding generated")
+                    
+                    # Add to vector store
+                    self.vector_store.add_chunk(
+                        chunk_id=enriched_chunk.chunk_id,
+                        document_id=enriched_chunk.document_id,
+                        text=enriched_chunk.cleaned_text,
+                        embedding=embedding,
+                        metadata=enriched_chunk.metadata
+                    )
+                    print(f"    ✓ Added to vector store")
+                    
+                    # Add to keyword index
+                    self.keyword_index.add_chunk(
+                        chunk_id=enriched_chunk.chunk_id,
+                        document_id=enriched_chunk.document_id,
+                        text=enriched_chunk.cleaned_text,
+                        metadata=enriched_chunk.metadata
+                    )
+                    print(f"    ✓ Added to keyword index")
+                    
+                    # Extract entities and relationships from metadata (KPMG structure)
+                    self.knowledge_graph.extract_entities_from_metadata(
+                        enriched_chunk.metadata,
+                        enriched_chunk.chunk_id
+                    )
+                    self.knowledge_graph.extract_relationships_from_metadata(
+                        enriched_chunk.metadata,
+                        enriched_chunk.chunk_id
+                    )
+                    
+                    # Also extract from text as fallback
+                    self.knowledge_graph.extract_entities_from_text(
+                        enriched_chunk.cleaned_text,
+                        enriched_chunk.chunk_id
+                    )
+                    self.knowledge_graph.extract_relationships_from_text(
+                        enriched_chunk.cleaned_text,
+                        enriched_chunk.chunk_id
+                    )
+                    print(f"    ✓ Added to knowledge graph")
+                    
+                    chunk_count += 1
+                except Exception as chunk_error:
+                    print(f"    ✗ Error processing chunk {i}: {str(chunk_error)[:100]}")
+                    # Continue with next chunk instead of crashing
+                    continue
             
             self.ingestion_registry.register_ingestion(
                 document_id=document_id,
