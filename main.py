@@ -156,39 +156,11 @@ async def startup_event():
             doc_count = len([f for f in os.listdir(sample_dir) if f.endswith(('.txt', '.pdf', '.ppt', '.pptx', '.doc', '.docx'))])
             print(f"\n✓ Found {doc_count} existing documents in sample_documents/")
         
-        # Download pre-ingested storage from cloud if available
-        print()
-        from download_storage import download_and_extract_storage
-        download_and_extract_storage()
+        # Skip storage download - will ingest on Render instead
+        # (Storage files too large for reliable transfer)
+        print("\n⚠️  Storage download disabled - will ingest on Render")
+        print("   Use POST /ingest/retry-failed to start ingestion")
         
-        # Reload storage after extraction
-        print("\nReloading storage from disk...")
-        try:
-            vector_store.load_from_disk()
-            print("  ✓ Vector store loaded")
-        except Exception as e:
-            print(f"  ⚠ Vector store load failed: {e}")
-        
-        try:
-            keyword_index.load_from_disk()
-            print("  ✓ Keyword index loaded")
-        except Exception as e:
-            print(f"  ⚠ Keyword index load failed: {e}")
-        
-        try:
-            knowledge_graph.load_from_disk()
-            print("  ✓ Knowledge graph loaded")
-        except Exception as e:
-            print(f"  ⚠ Knowledge graph load failed: {e}")
-        
-        try:
-            # Reload registry by re-initializing it
-            ingestion_service.ingestion_registry._load_registry()
-            print("  ✓ Ingestion registry loaded")
-        except Exception as e:
-            print(f"  ⚠ Ingestion registry load failed: {e}")
-        
-        print("✓ Storage reloaded")
         
         # Skip auto-ingestion to avoid Render timeout
         # User can trigger ingestion manually via /ingest or /ingest/reingest endpoints
