@@ -48,33 +48,34 @@ def download_and_extract_storage():
         
         print("✓ Storage extracted to temp directory")
         
-        # Handle nested folder structure
-        # Check if extraction created a nested structure
-        extracted_items = os.listdir(temp_dir)
-        print(f"  Extracted items: {extracted_items}")
+        # Copy all extracted files to current directory recursively
+        print(f"  Copying extracted files to current directory...")
         
-        # If there's a single folder containing data/ and logs/, move them up
-        if len(extracted_items) == 1 and os.path.isdir(os.path.join(temp_dir, extracted_items[0])):
-            nested_dir = os.path.join(temp_dir, extracted_items[0])
-            nested_items = os.listdir(nested_dir)
-            if 'data' in nested_items or 'logs' in nested_items:
-                print(f"  Found nested structure, moving files up...")
-                for item in nested_items:
-                    src = os.path.join(nested_dir, item)
-                    dst = os.path.join('.', item)
-                    if os.path.exists(dst):
-                        shutil.rmtree(dst)
-                    shutil.move(src, dst)
-                    print(f"    Moved {item}")
-        else:
-            # Files are at root level, move them
-            for item in extracted_items:
-                src = os.path.join(temp_dir, item)
-                dst = os.path.join('.', item)
-                if os.path.exists(dst):
-                    shutil.rmtree(dst)
-                shutil.move(src, dst)
-                print(f"  Moved {item}")
+        # Walk through temp directory and copy everything
+        for root, dirs, files in os.walk(temp_dir):
+            # Get relative path from temp_dir
+            rel_path = os.path.relpath(root, temp_dir)
+            
+            # Create corresponding directory in current location
+            if rel_path != '.':
+                target_dir = rel_path
+                os.makedirs(target_dir, exist_ok=True)
+            
+            # Copy all files
+            for file in files:
+                src_file = os.path.join(root, file)
+                if rel_path == '.':
+                    dst_file = file
+                else:
+                    dst_file = os.path.join(rel_path, file)
+                
+                # Remove destination if it exists
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                
+                # Copy file
+                shutil.copy2(src_file, dst_file)
+                print(f"    Copied {dst_file}")
         
         # Clean up temp directory
         shutil.rmtree(temp_dir)
