@@ -39,21 +39,67 @@ def download_and_extract_storage():
         
         # Extract the zip file
         print("Extracting storage files...")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall('.')
+        import tempfile
+        temp_dir = tempfile.mkdtemp()
         
-        print("✓ Storage extracted successfully")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+        
+        print("✓ Storage extracted to temp directory")
+        
+        # Handle nested folder structure
+        # Check if extraction created a nested structure
+        extracted_items = os.listdir(temp_dir)
+        print(f"  Extracted items: {extracted_items}")
+        
+        # If there's a single folder containing data/ and logs/, move them up
+        if len(extracted_items) == 1 and os.path.isdir(os.path.join(temp_dir, extracted_items[0])):
+            nested_dir = os.path.join(temp_dir, extracted_items[0])
+            nested_items = os.listdir(nested_dir)
+            if 'data' in nested_items or 'logs' in nested_items:
+                print(f"  Found nested structure, moving files up...")
+                for item in nested_items:
+                    src = os.path.join(nested_dir, item)
+                    dst = os.path.join('.', item)
+                    if os.path.exists(dst):
+                        import shutil
+                        shutil.rmtree(dst)
+                    shutil.move(src, dst)
+                    print(f"    Moved {item}")
+        else:
+            # Files are at root level, move them
+            for item in extracted_items:
+                src = os.path.join(temp_dir, item)
+                dst = os.path.join('.', item)
+                if os.path.exists(dst):
+                    import shutil
+                    shutil.rmtree(dst)
+                shutil.move(src, dst)
+                print(f"  Moved {item}")
+        
+        # Clean up temp directory
+        import shutil
+        shutil.rmtree(temp_dir)
         
         # Clean up zip file
         os.remove(zip_path)
         
         # Verify extraction
+        print("\nVerifying extracted files:")
         if os.path.exists('data/chroma_db/chunks.pkl'):
             print("✓ Vector store found")
+        else:
+            print("✗ Vector store NOT found at data/chroma_db/chunks.pkl")
+            
         if os.path.exists('data/whoosh_index/index.pkl'):
             print("✓ Keyword index found")
+        else:
+            print("✗ Keyword index NOT found")
+            
         if os.path.exists('logs/ingestion_registry.jsonl'):
             print("✓ Ingestion registry found")
+        else:
+            print("✗ Ingestion registry NOT found")
         
         print("=" * 80)
         print("✅ STORAGE READY - 171 documents pre-ingested!")
