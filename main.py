@@ -161,6 +161,14 @@ async def startup_event():
         from download_storage import download_and_extract_storage
         download_and_extract_storage()
         
+        # Reload storage after extraction
+        print("\nReloading storage from disk...")
+        vector_store.load_from_disk()
+        keyword_index.load_from_disk()
+        knowledge_graph.load_from_disk()
+        ingestion_service.ingestion_registry.load_registry()
+        print("✓ Storage reloaded")
+        
         # Skip auto-ingestion to avoid Render timeout
         # User can trigger ingestion manually via /ingest or /ingest/reingest endpoints
         registry_stats = ingestion_service.ingestion_registry.get_ingestion_stats()
