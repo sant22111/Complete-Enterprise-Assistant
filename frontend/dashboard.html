@@ -290,6 +290,7 @@
             <p>Real-time monitoring of the complete RAG pipeline - from ingestion to query response</p>
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+                <button class="refresh-btn" onclick="ingestSingle('BBCNews')" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">📰 Test: Ingest BBCNews</button>
                 <button class="refresh-btn" onclick="batchIngest(0, 20)" style="background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);">📦 Ingest 20 Documents</button>
                 <button class="refresh-btn" onclick="retryFailed()" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">🔁 Retry Failed Documents</button>
                 <button class="refresh-btn" onclick="reingestAll()" style="background: linear-gradient(135deg, #f56565 0%, #ed8936 100%);">🔄 Re-Ingest All Documents</button>
@@ -531,6 +532,55 @@
                 fetchAuditLogs()
             ]);
             updateQueryStats();
+        }
+
+        async function ingestSingle(docId) {
+            try {
+                // Show loading state
+                const logsDiv = document.getElementById('logs');
+                logsDiv.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>📄 Ingesting ${docId}...</span>
+                    </div>
+                `;
+
+                // Trigger single ingest
+                const response = await fetch(`${API_BASE}/ingest/single/${docId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Show detailed results
+                const chunks = data.result.chunk_count || 0;
+                logsDiv.innerHTML = `
+                    <div class="log-entry success">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>✓ ${docId} ingested! ${chunks} chunks created</span>
+                    </div>
+                    <div class="log-entry info">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span>📊 Vector: ${data.storage_stats.vector_chunks} | Keyword: ${data.storage_stats.keyword_chunks} | KG: ${data.storage_stats.kg_chunks}</span>
+                    </div>
+                ` + logsDiv.innerHTML;
+
+                // Refresh all stats
+                await refreshAll();
+
+                alert(`✓ Document ingested!\n\n${docId}: ${chunks} chunks\n\nVector Store: ${data.storage_stats.vector_chunks}\nKeyword Index: ${data.storage_stats.keyword_chunks}\nKnowledge Graph: ${data.storage_stats.kg_chunks}`);
+
+            } catch (error) {
+                console.error('Error during single ingest:', error);
+                alert(`⚠️ Ingest failed: ${error.message}`);
+            }
         }
 
         async function batchIngest(start, count) {

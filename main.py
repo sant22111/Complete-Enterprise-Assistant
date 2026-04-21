@@ -230,6 +230,46 @@ async def ingest_documents(request: IngestRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/ingest/single/{document_id}")
+async def ingest_single_document(document_id: str):
+    """
+    Ingest a single specific document by ID.
+    Useful for testing and debugging.
+    """
+    try:
+        print(f"\n📄 INGESTING SINGLE DOCUMENT: {document_id}")
+        print("=" * 80)
+        
+        # Ingest the document
+        result = ingestion_service.ingest_document(
+            document_id=document_id,
+            auto_approve=True
+        )
+        
+        # Save storage immediately
+        print("\nSaving to disk...")
+        vector_store.save_to_disk()
+        keyword_index.save_to_disk()
+        knowledge_graph.save_to_disk()
+        print("✓ Storage saved")
+        
+        # Get updated stats
+        stats = ingestion_service.get_ingestion_stats()
+        
+        return {
+            "status": "success",
+            "document_id": document_id,
+            "result": result,
+            "storage_stats": {
+                "vector_chunks": stats['vector_store_stats']['total_chunks'],
+                "keyword_chunks": stats['keyword_index_stats']['total_chunks'],
+                "kg_chunks": stats['knowledge_graph_stats']['total_chunks_indexed'],
+                "total_documents": stats['total_documents']
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/ingest/batch")
 async def ingest_batch(start: int = 0, count: int = 20):
     """
