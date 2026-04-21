@@ -49,19 +49,18 @@ def download_and_extract_storage():
             
             # Extract each file, normalizing paths
             for item in file_list:
+                # Skip directory entries
+                if item.endswith('/'):
+                    continue
+                
                 # Normalize path separators (\ to /)
                 normalized_name = item.replace('\\', '/')
                 
-                # Extract to temp directory with normalized path
-                if item.endswith('/'):
-                    # It's a directory
-                    os.makedirs(os.path.join(temp_dir, normalized_name), exist_ok=True)
-                else:
-                    # It's a file
-                    target_path = os.path.join(temp_dir, normalized_name)
-                    os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                    with zip_ref.open(item) as source, open(target_path, 'wb') as target:
-                        target.write(source.read())
+                # Extract file to temp directory with normalized path
+                target_path = os.path.join(temp_dir, normalized_name)
+                os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                with zip_ref.open(item) as source, open(target_path, 'wb') as target:
+                    target.write(source.read())
         
         print("✓ Storage extracted to temp directory")
         
