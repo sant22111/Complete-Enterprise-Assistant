@@ -56,6 +56,9 @@ def download_and_extract_storage():
             # Get relative path from temp_dir
             rel_path = os.path.relpath(root, temp_dir)
             
+            # Normalize path separators (convert \ to /)
+            rel_path = rel_path.replace('\\', '/')
+            
             # Create corresponding directory in current location
             if rel_path != '.':
                 target_dir = rel_path
@@ -67,7 +70,7 @@ def download_and_extract_storage():
                 if rel_path == '.':
                     dst_file = file
                 else:
-                    dst_file = os.path.join(rel_path, file)
+                    dst_file = f"{rel_path}/{file}"
                 
                 # Remove destination if it exists
                 if os.path.exists(dst_file):
